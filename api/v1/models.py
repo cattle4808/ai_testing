@@ -47,9 +47,21 @@ class BaseModel(models.Model):
         abstract = True
 
 
+class TgUsers(BaseModel):
+    user = models.IntegerField(unique=True)
+    is_admin = models.BooleanField(default=False)
+    username = models.CharField(max_length=255, null=True, blank=True)
+
+
 class IdScript(BaseModel):
     class ScriptChoices(models.TextChoices):
-        BASE_PROF_UUID = 'base_prof_uuid', 'Base production script with UUID'
+        BASE_PROD_UUID = 'base_prof_uuid', 'Base production script with UUID'
+
+    owner = models.ForeignKey(
+        TgUsers,
+        on_delete=models.CASCADE,
+        related_name='scripts',
+    )
 
     script = models.CharField(
         max_length=100,
@@ -68,7 +80,7 @@ class IdScript(BaseModel):
     script_type = models.CharField(
         max_length=100,
         choices=ScriptChoices.choices,
-        default=ScriptChoices.BASE_PROF_UUID
+        default=ScriptChoices.BASE_PROD_UUID
     )
     fingerprint = models.CharField(
         max_length=255,
@@ -82,6 +94,7 @@ class IdScript(BaseModel):
     is_active = models.BooleanField(default=False, db_index=True)
     used = models.IntegerField(default=0)
     max_usage = models.IntegerField(default=75)
+    first_activate = models.DateTimeField(null=True, blank=True)
     first_seen = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -121,7 +134,7 @@ class IdScript(BaseModel):
         if self.used >= self.max_usage:
             return False
 
-        if not self.first_seen:
+        if not self.first_activate:
             IdScript.objects.filter(
                 id=self.id,
                 first_seen__isnull=True
@@ -165,8 +178,12 @@ class Answer(BaseModel):
         return f"{self.script.script} - {self.created_at}"
 
 
-class TgUsers(BaseModel):
-    user = models.IntegerField(unique=True)
-    is_admin = models.BooleanField(default=False)
-    username = models.CharField(max_length=255, null=True, blank=True)
 
+class Referral(models.Model):
+    inviter = models.ForeignKey(TgUsers, on_delete=models.CASCADE, related_name='invited')
+    invited = models.ForeignKey(TgUsers, on_delete=models.CASCADE, related_name='referral_source')
+    used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.inviter} → {self.invited} | Used: {self.used}"
