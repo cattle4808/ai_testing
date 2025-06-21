@@ -106,51 +106,53 @@ class IdScript(BaseModel):
     def __str__(self):
         return self.script
 
-    def is_access_time_valid(self) -> bool:
-        now_ = now()
-        return self.is_active and self.start_at <= now_ <= self.stop_at
+    def is_within_active_time(self) -> bool:
+        current_time = now()
+        return self.is_active and self.start_at <= current_time <= self.stop_at
 
-    def check_fingerprint(self, fp: str) -> bool:
+    def is_usage_available(self) -> bool:
+        return self.used < self.max_usage
+
+    def initialize_activation_if_needed(self):
+        if not self.first_activate:
+            current_time = now()
+            IdScript.objects.filter(
+                id=self.id,
+                first_seen__isnull=True
+            ).update(first_seen=current_time)
+            self.first_activate = current_time
+
+    def is_fingerprint_valid(self, fp: str) -> bool:
         return self.fingerprint == fp
 
-    def assign_fingerprint_if_empty(self, fp: str) -> bool:
+    def assign_fingerprint_if_unset(self, fp: str) -> bool:
         if not self.fingerprint:
             updated = IdScript.objects.filter(
                 id=self.id,
                 fingerprint__isnull=True
             ).update(fingerprint=fp)
-
             if updated:
                 self.fingerprint = fp
                 return True
         return False
 
-    def is_access_allowed(self, fp: str) -> bool:
-        current_time = now()
-
-        if not self.is_access_time_valid():
-            return False
-
-        if self.used >= self.max_usage:
-            return False
-
+    def is_ready_to_assign_fingerprint(self) -> bool:
         if not self.first_activate:
-            IdScript.objects.filter(
-                id=self.id,
-                first_seen__isnull=True
-            ).update(first_seen=current_time)
-            self.first_seen = current_time
+            return False
+        return now() - self.first_activate >= timedelta(seconds=20)
 
-        if self.fingerprint:
-            return self.fingerprint == fp
-
-        if current_time - self.first_seen >= timedelta(seconds=20):
-            return self.assign_fingerprint_if_empty(fp)
+    def try_bind_fingerprint(self, fp: str) -> bool:
+        if self.is_ready_to_assign_fingerprint():
+            return self.assign_fingerprint_if_unset(fp)
         return True
 
     def increment_usage(self):
         IdScript.objects.filter(id=self.id).update(used=models.F('used') + 1)
-        self.used = models.F('used') + 1
+        self.used += 1
+
+    @property
+    def is_max_usage_reached(self):
+        return self.used >= self.max_usage
 
     def save(self, *args, **kwargs):
         if not self.script:
