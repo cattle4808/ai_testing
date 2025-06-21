@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+
+from django.conf.global_settings import DATABASES
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -91,24 +93,29 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME":     os.getenv("POSTGRES_DB",     "answer_ai"),
-        "USER":     os.getenv("POSTGRES_USER",   "answer_ai"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "answer_ai"),
-        "HOST":     os.getenv("POSTGRES_HOST",   "db"),
-        "PORT":     os.getenv("POSTGRES_PORT",   "5432"),
-        "ATOMIC_REQUESTS": True,
+DB_TYPES = {
+        'sqlite': {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    },
+
+    'postgres': {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME":     os.getenv("POSTGRES_DB",     "answer_ai"),
+            "USER":     os.getenv("POSTGRES_USER",   "answer_ai"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "answer_ai"),
+            "HOST":     os.getenv("POSTGRES_HOST",   "db"),
+            "PORT":     os.getenv("POSTGRES_PORT",   "5432"),
+            "ATOMIC_REQUESTS": True,
+        }
     }
 }
+
+DATABASES = DB_TYPES[os.getenv('DB_TYPE', 'sqlite').lower()]
 
 
 # Password validation
