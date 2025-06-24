@@ -116,8 +116,6 @@ DB_TYPES = {
 }
 
 DATABASES = DB_TYPES[os.getenv('DB_TYPE', 'sqlite').lower()]
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

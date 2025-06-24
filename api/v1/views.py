@@ -1,14 +1,18 @@
 import base64
-
+from django.views import View
+from django.http import Http404, HttpResponse
+from django.core.serializers import serialize
 from rest_framework import views, generics, status
 from rest_framework.generics import UpdateAPIView
 from rest_framework.response import Response
 from django.utils.dateparse import parse_datetime
 from datetime import timedelta
 
+from django.conf import settings
+
 from serices.image2answer.model1_openai import base64_image_answer_question
 from . import models, serializers, mixins
-
+from . scripts import BASE_SCRIPT_PROD_UUID
 
 class CreateIdScriptApiView(mixins.SuccessErrorResponseMixin, generics.ListCreateAPIView):
     queryset = models.IdScript.objects.all()
@@ -114,24 +118,61 @@ class AiAnswerCheckView(mixins.SuccessErrorResponseMixin, generics.ListCreateAPI
         if not serializer.is_valid():
             return self.error("validation_error", "Validation error", serializer.errors)
 
-        script = serializer.validated_data['script_instance']
+        script: models.IdScript = serializer.validated_data['script_instance']
         image = serializer.validated_data['image']
+        fingerprint = serializer.validated_data.get('fingerprint')
+
+        if not script.is_within_active_time():
+            return self.error("inactive_script", "Script is not active or not in allowed time range")
+
+        if script.is_max_usage_reached:
+            return self.error("max_usage_reached", "Maximum usage reached for this script")
+
+        script.initialize_activation_if_needed()
+
+        if fingerprint:
+            if not script.try_bind_fingerprint(fingerprint):
+                return self.error("fingerprint_bind_error", "Script is not ready to bind fingerprint")
+
+            if not script.is_fingerprint_valid(fingerprint):
+                return self.error("invalid_fingerprint", "Provided fingerprint does not match script")
 
         base64_img = self.get_image_base64(image)
-
         data = base64_image_answer_question(base64_img)
 
         if not data or not data.get("answer"):
             return self.error("ai_parse_error", "Answer not found", status_code=500)
 
-        if serializer.is_valid():
-            serializer.save()
-            return self.success(data=serializer.data, status_code=201)
+        script.increment_usage()
 
-        return self.error(
-            code=1001,
-            message="Validation error",
-            details=serializer.errors,
-            status_code=400
-        )
+        serializer.save(answer=data, script=script)
+
+        return self.success(data=serializer.data, status_code=201)
+
+
+class GetScript(View):
+    def script_filter(self, script_type, key):
+        template = {
+            "base_prof_uuid": BASE_SCRIPT_PROD_UUID
+        }.get(script_type, BASE_SCRIPT_PROD_UUID)
+        return template.format(key=key, domain=settings.DOMAIN)
+
+    def get(self, requests, script):
+        if not script:
+            raise Http404()
+        try:
+            script_info = models.IdScript.objects.get(script=script)
+
+            if not script_info.is_within_active_time():
+                return Http404()
+
+            if not script_info.is_max_usage_reached():
+                return Http404()
+
+            content = self.script_filter(script_info.script_type, script_info.key)
+            return HttpResponse(content, content_type='application/javascript')
+
+        except:
+            return Http404()
+
 

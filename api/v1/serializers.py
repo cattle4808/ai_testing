@@ -59,7 +59,14 @@ class ChangeScriptTimeSerializer(serializers.ModelSerializer):
 
 
 class AiAnswerSerializer(serializers.ModelSerializer):
+    fingerprint = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    script_instance = serializers.PrimaryKeyRelatedField(
+        source='script',
+        queryset=models.IdScript.objects.all(),
+        write_only=True
+    )
+
     class Meta:
         model = models.Answer
-        fields = ['script', 'image', 'answer', 'created_at']
-        read_only_fields = ['created_at']
+        fields = ['script', 'script_instance', 'image', 'answer', 'created_at', 'fingerprint']
+        read_only_fields = ['created_at', 'answer']
