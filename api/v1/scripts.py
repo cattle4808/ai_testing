@@ -307,7 +307,7 @@ document.addEventListener('mouseup', async e => {{
       fd.append('image', blob, 'capture.png');
 
       try {{
-        const res = await fetch('{domain}/api/v2/check_nojs_script/', {{ method: 'POST', body: fd }});
+        const res = await fetch('{domain}', {{ method: 'POST', body: fd }});
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const j = await res.json();
         currentAnswer = j?.data?.answer || j?.data || j?.error?.message || '❌ нет ответа';
