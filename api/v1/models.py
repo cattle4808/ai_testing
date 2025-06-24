@@ -52,6 +52,9 @@ class TgUsers(BaseModel):
     is_admin = models.BooleanField(default=False)
     username = models.CharField(max_length=255, null=True, blank=True)
 
+    def __str__(self):
+        return f"{f'{self.username} - {self.user}' if self.username else self.user}"
+
 
 class IdScript(BaseModel):
     class ScriptChoices(models.TextChoices):
