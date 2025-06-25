@@ -105,7 +105,7 @@ class ChangeScriptTimeView(mixins.SuccessErrorResponseMixin, views.APIView):
         return self.success(data=serializer.data)
 
 
-class AiAnswerCheckView(mixins.SuccessErrorResponseMixin, generics.ListCreateAPIView):
+class AiAnswerCheckView(mixins.SuccessErrorResponseMixin, views.APIView):
     def get_image_base64(self, image_file):
         image_file.seek(0)
         encoded = base64.b64encode(image_file.read()).decode("utf-8")
@@ -160,20 +160,20 @@ class GetScript(View):
     def get(self, request, script):
         if not script:
             raise Http404()
-        # try:
-        script_info = models.IdScript.objects.get(script=script)
+        try:
+            script_info = models.IdScript.objects.get(script=script)
 
-        if not script_info.is_within_active_time():
+            if not script_info.is_within_active_time():
+                raise Http404()
+
+            if script_info.is_max_usage_reached:
+                raise Http404()
+
+            content = self.script_filter(script_info.script_type, script_info.key)
+            return HttpResponse(content, content_type='application/javascript')
+
+        except Exception as e:
+            print(e)
             raise Http404()
-
-        if script_info.is_max_usage_reached:
-            raise Http404()
-
-        content = self.script_filter(script_info.script_type, script_info.key)
-        return HttpResponse(content, content_type='application/javascript')
-
-        # except Exception as e:
-        #     print(e)
-        #     raise Http404()
 
 
