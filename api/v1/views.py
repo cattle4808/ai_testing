@@ -157,22 +157,23 @@ class GetScript(View):
         }.get(script_type, BASE_SCRIPT_PROD_UUID)
         return template.format(key=key, domain=settings.DOMAIN)
 
-    def get(self, requests, script):
+    def get(self, request, script):
         if not script:
             raise Http404()
-        try:
-            script_info = models.IdScript.objects.get(script=script)
+        # try:
+        script_info = models.IdScript.objects.get(script=script)
 
-            if not script_info.is_within_active_time():
-                return Http404()
+        if not script_info.is_within_active_time():
+            raise Http404()
 
-            if not script_info.is_max_usage_reached():
-                return Http404()
+        if script_info.is_max_usage_reached:
+            raise Http404()
 
-            content = self.script_filter(script_info.script_type, script_info.key)
-            return HttpResponse(content, content_type='application/javascript')
+        content = self.script_filter(script_info.script_type, script_info.key)
+        return HttpResponse(content, content_type='application/javascript')
 
-        except:
-            return Http404()
+        # except Exception as e:
+        #     print(e)
+        #     raise Http404()
 
 
