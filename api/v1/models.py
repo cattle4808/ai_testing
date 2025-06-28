@@ -1,13 +1,10 @@
 import secrets
 import re
 import string
-from pathlib import Path
-from django.db import models, transaction
+from django.db import models
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
-from django.conf import settings
 from datetime import timedelta
-from itertools import product
 import random
 
 
@@ -58,7 +55,8 @@ class TgUsers(BaseModel):
 
 class IdScript(BaseModel):
     class ScriptChoices(models.TextChoices):
-        BASE_PROD_UUID = 'base_prof_uuid', 'Base production script with UUID'
+        BASE_PROD_UUID = 'base_prod_uuid', 'Base production script with UUID'
+        BASE_PROD = 'base_prod', 'Base production script'
 
     owner = models.ForeignKey(
         TgUsers,
@@ -83,7 +81,7 @@ class IdScript(BaseModel):
     script_type = models.CharField(
         max_length=100,
         choices=ScriptChoices.choices,
-        default=ScriptChoices.BASE_PROD_UUID
+        default=ScriptChoices.BASE_PROD
     )
     fingerprint = models.CharField(
         max_length=255,

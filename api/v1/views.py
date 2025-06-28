@@ -12,7 +12,7 @@ from django.conf import settings
 
 from serices.image2answer.model1_openai import base64_image_answer_question
 from . import models, serializers, mixins
-from . scripts import BASE_SCRIPT_PROD_UUID
+from . scripts import BASE_SCRIPT_PROD_UUID, BASE_SCRIPT
 
 class CreateIdScriptApiView(mixins.SuccessErrorResponseMixin, generics.ListCreateAPIView):
     queryset = models.IdScript.objects.all()
@@ -153,8 +153,9 @@ class AiAnswerCheckView(mixins.SuccessErrorResponseMixin, views.APIView):
 class GetScript(View):
     def script_filter(self, script_type, key):
         template = {
-            "base_prof_uuid": BASE_SCRIPT_PROD_UUID
-        }.get(script_type, BASE_SCRIPT_PROD_UUID)
+            "base_prod_uuid": BASE_SCRIPT_PROD_UUID,
+            "base_uuid": BASE_SCRIPT
+        }.get(script_type, BASE_SCRIPT)
         return template.format(key=key, domain=settings.DOMAIN)
 
     def get(self, request, script):
