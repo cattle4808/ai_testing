@@ -57,16 +57,7 @@ class ChangeScriptTimeSerializer(serializers.ModelSerializer):
             'used', 'max_usage', 'first_activate', 'first_seen'
         ]
 
-
-class AiAnswerSerializer(serializers.ModelSerializer):
-    fingerprint = serializers.CharField(required=False, allow_blank=True, write_only=True)
-    script_instance = serializers.PrimaryKeyRelatedField(
-        source='script',
-        queryset=models.IdScript.objects.all(),
-        write_only=True
-    )
-
-    class Meta:
-        model = models.Answer
-        fields = ['script', 'script_instance', 'image', 'answer', 'created_at', 'fingerprint']
-        read_only_fields = ['created_at', 'answer']
+class AiAnswerSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    fingerprint = serializers.CharField()
+    image = serializers.ImageField()

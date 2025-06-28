@@ -118,9 +118,14 @@ class AiAnswerCheckView(mixins.SuccessErrorResponseMixin, views.APIView):
         if not serializer.is_valid():
             return self.error("validation_error", "Validation error", serializer.errors)
 
-        script: models.IdScript = serializer.validated_data['script_instance']
-        image = serializer.validated_data['image']
-        fingerprint = serializer.validated_data.get('fingerprint')
+        key = serializer.validated_data.get('key', None)
+        fingerprint = serializer.validated_data.get('fingerprint', None)
+        image = serializer.validated_data.get('image', None)
+
+        try:
+            script = models.IdScript.objects.get(key=key)
+        except models.IdScript.DoesNotExist:
+            return self.error("script_not_found", "Script not found", status_code=404)
 
         if not script.is_within_active_time():
             return self.error("inactive_script", "Script is not active or not in allowed time range")
@@ -131,11 +136,14 @@ class AiAnswerCheckView(mixins.SuccessErrorResponseMixin, views.APIView):
         script.initialize_activation_if_needed()
 
         if fingerprint:
-            if not script.try_bind_fingerprint(fingerprint):
-                return self.error("fingerprint_bind_error", "Script is not ready to bind fingerprint")
+            if script.fingerprint:
+                if not script.is_fingerprint_valid(fingerprint):
+                    return self.error("invalid_fingerprint", "Provided fingerprint does not match script")
 
-            if not script.is_fingerprint_valid(fingerprint):
-                return self.error("invalid_fingerprint", "Provided fingerprint does not match script")
+            if script.is_ready_to_assign_fingerprint():
+                if not script.assign_fingerprint_if_unset(fingerprint):
+                    return self.error("fingerprint_bind_error", "Failed to bind fingerprint")
+                script.refresh_from_db()
 
         base64_img = self.get_image_base64(image)
         data = base64_image_answer_question(base64_img)
@@ -145,9 +153,12 @@ class AiAnswerCheckView(mixins.SuccessErrorResponseMixin, views.APIView):
 
         script.increment_usage()
 
-        serializer.save(answer=data, script=script)
-
-        return self.success(data=serializer.data, status_code=201)
+        answer = models.Answer.objects.create(
+            script=script,
+            image=image,
+            answer=data
+        )
+        return self.success(data=data, status_code=201)
 
 
 class GetScript(View):
