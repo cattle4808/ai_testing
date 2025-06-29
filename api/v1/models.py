@@ -49,8 +49,26 @@ class TgUsers(BaseModel):
     is_admin = models.BooleanField(default=False)
     username = models.CharField(max_length=255, null=True, blank=True)
 
+    referred_by = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='referred_users',
+        verbose_name='Пригласил',
+        help_text='Пользователь, который пригласил данного пользователя'
+    )
+
     def __str__(self):
         return f"{f'{self.username} - {self.user}' if self.username else self.user}"
+
+    @property
+    def referral_count(self):
+        return self.referred_users.count()
+
+    @property
+    def has_referrer(self):
+        return self.referred_by is not None
 
 
 class IdScript(BaseModel):
