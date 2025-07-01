@@ -1,5 +1,4 @@
 from . main import main
+from . admin import admin
 
-
-def setup_handlers(dp):
-    main(dp)
+__all__ = ['main', 'admin']
