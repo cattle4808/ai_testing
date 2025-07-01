@@ -201,3 +201,9 @@ cython_debug/
 .venv/
 .venv
 
+media/*
+media/
+media
+
+api/v1/migrations/
+api/v1/migrations/*
