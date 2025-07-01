@@ -2,6 +2,7 @@ from . import bot, dp
 
 from . handlers import admin, main
 
-main.setup_handlers(dp)
-admin.setup_handlers(dp)
+
+dp.include_router(admin)
+dp.include_router(main)
 
