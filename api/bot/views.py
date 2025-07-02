@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from aiogram import types
+from serices.crypto import SimpleCipher
 
 from bot import bot, dp
 
@@ -14,6 +15,3 @@ async def webhook(request):
     await dp.feed_webhook_update(bot, update)
     return JsonResponse({"ok": True})
 
-
-def create_script_select_time(request):
-    ...

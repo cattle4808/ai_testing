@@ -182,7 +182,9 @@ cython_debug/
 
 # Ruff stuff:
 .ruff_cache/
-
+venv
+venv/*
+venv/
 # PyPI configuration file
 .pypirc
 
