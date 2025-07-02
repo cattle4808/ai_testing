@@ -13,3 +13,7 @@ async def webhook(request):
     update = types.Update.model_validate_json(body)
     await dp.feed_webhook_update(bot, update)
     return JsonResponse({"ok": True})
+
+
+def create_script_select_time(request):
+    ...
