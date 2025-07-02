@@ -4,5 +4,5 @@ from api.bot import views
 
 
 urlpatterns = [
-    path('webhook/', views.TelegramWebhookView.as_view()),
+    path('webhook/', views.webhook),
 ]

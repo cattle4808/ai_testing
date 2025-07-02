@@ -12,11 +12,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
-from django.conf.global_settings import DATABASES
 from dotenv import load_dotenv
 
 load_dotenv()
 
+WEBHOOK_URL=os.getenv("WEBHOOK_URL")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,14 +54,14 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middlewares.CorsMiddleware',
-    'django.middlewares.security.SecurityMiddleware',
-    'django.contrib.sessions.middlewares.SessionMiddleware',
-    'django.middlewares.common.CommonMiddleware',
-    'django.middlewares.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middlewares.AuthenticationMiddleware',
-    'django.contrib.messages.middlewares.MessageMiddleware',
-    'django.middlewares.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -159,7 +159,7 @@ TIME_ZONE = 'Asia/Tashkent'
 
 DEFAULT_TIMEZONE = 'Asia/Tashkent'
 
-
+REDIS_URL='redis://localhost:6379/0'
 
 
 # Static files (CSS, JavaScript, Images)
@@ -175,3 +175,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+BOT_TOKEN = os.getenv('BOT_TOKEN')

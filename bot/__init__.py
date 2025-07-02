@@ -3,6 +3,7 @@ from aiogram.fsm.storage.redis import RedisStorage
 from django.conf import settings
 
 bot = Bot(token=settings.BOT_TOKEN)
-dp = Dispatcher(bot)
-
 storage = RedisStorage.from_url(settings.REDIS_URL)
+
+dp = Dispatcher(storage=storage)
+
