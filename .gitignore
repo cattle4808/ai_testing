@@ -209,3 +209,7 @@ media
 
 api/v1/migrations/
 api/v1/migrations/*
+
+staticfiles/
+staticfiles/*
+staticfiles
