@@ -12,6 +12,7 @@ except ImportError:
     _DEFAULT_SECRET_KEY = None
 
 
+
 class SimpleCipher:
     def __init__(self, secret_key: str = None):
         if secret_key is None:
