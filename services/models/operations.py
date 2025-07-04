@@ -71,3 +71,7 @@ def get_referrals_counts(user_id: int) -> list:
     referrals = models.Referral.objects.filter(inviter_id=user_id, used=False)
     return [model_to_dict(ref, fields=['id', 'used', 'created_at']) for ref in referrals]
 
+
+@catch_error("IS_ADMIN")
+def is_admin(user_id: int) -> bool:
+    return models.TgUsers.objects.filter(user=user_id, is_admin=True).exists()
