@@ -71,9 +71,9 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://api.mjm.mom',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://165.232.93.246:8000'
 ]
 
 ROOT_URLCONF = 'core.urls'

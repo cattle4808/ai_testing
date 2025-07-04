@@ -1,6 +1,7 @@
 APP_NAME = 'v1'
 
 from django.contrib import admin
+from django.db.models.functions import TruncDate, TruncHour, ExtractHour
 from django.db.models import Count, Sum, Avg, Q, F, Max, Min
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse, path
@@ -341,9 +342,11 @@ class TgUsersAdmin(admin.ModelAdmin):
         thirty_days_ago = now() - timedelta(days=30)
         daily_registrations = TgUsers.objects.filter(
             created_at__gte=thirty_days_ago
-        ).extra({
-            'day': 'date(created_at)'
-        }).values('day').annotate(count=Count('id')).order_by('day')
+        ).annotate(
+            day=TruncDate('created_at')
+        ).values('day').annotate(
+            count=Count('id')
+        ).order_by('day')
 
         context = {
             'total_users': total_users,
@@ -664,9 +667,11 @@ class IdScriptAdmin(admin.ModelAdmin):
         thirty_days_ago = now() - timedelta(days=30)
         daily_usage = Answer.objects.filter(
             created_at__gte=thirty_days_ago
-        ).extra({
-            'day': 'date(created_at)'
-        }).values('day').annotate(count=Count('id')).order_by('day')
+        ).annotate(
+            day=TruncDate('created_at')
+        ).values('day').annotate(
+            count=Count('id')
+        ).order_by('day')
 
         context = {
             'total_scripts': total_scripts,
@@ -870,17 +875,21 @@ class AnswerAdmin(admin.ModelAdmin):
         thirty_days_ago = now() - timedelta(days=30)
         daily_answers = Answer.objects.filter(
             created_at__gte=thirty_days_ago
-        ).extra({
-            'day': 'date(created_at)'
-        }).values('day').annotate(count=Count('id')).order_by('day')
+        ).annotate(
+            day=TruncDate('created_at')
+        ).values('day').annotate(
+            count=Count('id')
+        ).order_by('day')
 
         top_scripts = IdScript.objects.annotate(
             answers_count=Count('answers')
         ).filter(answers_count__gt=0).order_by('-answers_count')[:10]
 
-        hourly_distribution = Answer.objects.extra({
-            'hour': 'extract(hour from created_at)'
-        }).values('hour').annotate(count=Count('id')).order_by('hour')
+        hourly_distribution = Answer.objects.annotate(
+            hour=TruncHour('created_at')
+        ).values('hour').annotate(
+            count=Count('id')
+        ).order_by('hour')
 
         context = {
             'total_answers': total_answers,
@@ -896,7 +905,6 @@ class AnswerAdmin(admin.ModelAdmin):
         return TemplateResponse(request, 'admin/answers_analytics.html', context)
 
 
-# Продвинутый Admin для Referral
 @admin.register(Referral)
 class ReferralAdmin(admin.ModelAdmin):
     list_display = [
@@ -1071,9 +1079,11 @@ class ReferralAdmin(admin.ModelAdmin):
         thirty_days_ago = now() - timedelta(days=30)
         daily_referrals = Referral.objects.filter(
             created_at__gte=thirty_days_ago
-        ).extra({
-            'day': 'date(created_at)'
-        }).values('day').annotate(count=Count('id')).order_by('day')
+        ).annotate(
+            day=TruncDate('created_at')
+        ).values('day').annotate(
+            count=Count('id')
+        ).order_by('day')
 
         conversion_rate = (used_referrals / total_referrals * 100) if total_referrals > 0 else 0
 
@@ -1166,15 +1176,19 @@ class CustomAdminSite(AdminSite):
 
         daily_registrations = TgUsers.objects.filter(
             created_at__gte=thirty_days_ago
-        ).extra({
-            'day': "date(created_at)"
-        }).values('day').annotate(count=Count('id')).order_by('day')
+        ).annotate(
+            day=TruncDate('created_at')
+        ).values('day').annotate(
+            count=Count('id')
+        ).order_by('day')
 
         daily_usage = Answer.objects.filter(
             created_at__gte=thirty_days_ago
-        ).extra({
-            'day': "date(created_at)"
-        }).values('day').annotate(count=Count('id')).order_by('day')
+        ).annotate(
+            day=TruncDate('created_at')
+        ).values('day').annotate(
+            count=Count('id')
+        ).order_by('day')
 
         top_users = TgUsers.objects.annotate(
             scripts_count=Count('scripts'),
@@ -1192,11 +1206,14 @@ class CustomAdminSite(AdminSite):
         ).order_by('-count')
 
         seven_days_ago = datetime.now() - timedelta(days=7)
+
         hourly_activity = Answer.objects.filter(
             created_at__gte=seven_days_ago
-        ).extra({
-            'hour': "strftime('%%H', created_at)"
-        }).values('hour').annotate(count=Count('id')).order_by('hour')
+        ).annotate(
+            hour=ExtractHour('created_at')
+        ).values('hour').annotate(
+            count=Count('id')
+        ).order_by('hour')
 
         referral_conversion = (used_referrals / total_referrals * 100) if total_referrals > 0 else 0
 

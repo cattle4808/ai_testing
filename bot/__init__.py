@@ -6,4 +6,3 @@ bot = Bot(token=settings.BOT_TOKEN)
 storage = RedisStorage.from_url(settings.REDIS_URL)
 
 dp = Dispatcher(storage=storage)
-

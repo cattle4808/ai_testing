@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from aiogram import types
 from services.crypto import SimpleCipher
 
-from bot import bot, dp
+from bot.runner import bot, dp
 
 
 @csrf_exempt
@@ -14,4 +14,3 @@ async def webhook(request):
     update = types.Update.model_validate_json(body)
     await dp.feed_webhook_update(bot, update)
     return JsonResponse({"ok": True})
-
