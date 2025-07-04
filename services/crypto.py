@@ -43,17 +43,17 @@ class TgCrypto:
             bot_token = settings.BOT_TOKEN
         self.SECRET_KEY = hashlib.sha256(bot_token.encode()).digest()
 
-    def parse_init_data(self, init_data: str) -> tuple[dict, str]:
+    def _parse_init_data(self, init_data: str) -> tuple[dict, str]:
         data = dict(urllib.parse.parse_qsl(init_data, keep_blank_values=True))
         hash_check = data.pop("hash", None)
         return data, hash_check
 
-    def build_check_string(self, data: dict) -> str:
+    def _build_check_string(self, data: dict) -> str:
         return "\n".join(f"{k}={v}" for k, v in sorted(data.items()))
 
     def verify_init_data(self, init_data_str: str, max_age_sec: int = 86400) -> bool:
-        data, hash_check = self.parse_init_data(init_data_str)
-        check_string = self.build_check_string(data)
+        data, hash_check = self._parse_init_data(init_data_str)
+        check_string = self._build_check_string(data)
         computed_hash = hmac.new(self.SECRET_KEY, check_string.encode(), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(computed_hash, hash_check):
             return False
