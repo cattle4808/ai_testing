@@ -36,4 +36,4 @@ class CreateScriptView(views.APIView):
 
 
 
-        script = operations.create_script(tg_id, start_str, )
+        # script = operations.create_script(tg_id, start_str, )
