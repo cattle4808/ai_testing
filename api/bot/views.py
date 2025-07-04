@@ -1,8 +1,12 @@
+import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.http import Http404
 from aiogram import types
-from services.crypto import SimpleCipher
+from rest_framework import views
 
+from services.crypto import SimpleCipher, TgCrypto
+from services.models import operations
 from bot.runner import bot, dp
 
 
@@ -14,3 +18,22 @@ async def webhook(request):
     update = types.Update.model_validate_json(body)
     await dp.feed_webhook_update(bot, update)
     return JsonResponse({"ok": True})
+
+class CreateScriptView(views.APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            payload = json.loads(request.body)
+            start_str = payload["start"]
+            tg_id = payload["user_id"]
+            username = payload.get("username", None)
+            init_data = payload["initData"]
+        except (ValueError, KeyError):
+            return Http404()
+
+        check_init_data = TgCrypto().verify_init_data(init_data)
+        if not check_init_data:
+            return Http404()
+
+
+
+        script = operations.create_script(tg_id, start_str, )
