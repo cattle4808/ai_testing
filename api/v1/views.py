@@ -10,7 +10,7 @@ from datetime import timedelta
 
 from django.conf import settings
 
-from serices.image2answer.model1_openai import base64_image_answer_question
+from services.image2answer.model1_openai import base64_image_answer_question
 from . import models, serializers, mixins
 from . scripts import BASE_SCRIPT_PROD_UUID, BASE_SCRIPT
 

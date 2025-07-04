@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from aiogram import types
-from serices.crypto import SimpleCipher
+from services.crypto import SimpleCipher
 
 from bot import bot, dp
 
