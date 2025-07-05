@@ -17,8 +17,11 @@ async def echo(message: types.Message):
     user_id = message.from_user.id
     username = message.from_user.username or "ГОСТЬ"
 
-    await sync_to_async(operations.get_or_create_tg_user)(user_id)
+    user = await sync_to_async(operations.get_or_create_tg_user)(user_id)
 
+    await message.answer(
+        str(user)
+    )
     if await sync_to_async(operations.is_admin)(user_id):
         await bot.send_message(user_id, 'Вы администратор')
         await message.answer('Привет, администратор!', reply_markup=admin_reply.main_menu())
