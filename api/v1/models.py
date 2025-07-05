@@ -45,7 +45,7 @@ class BaseModel(models.Model):
 
 
 class TgUsers(BaseModel):
-    user = models.IntegerField(unique=True)
+    user = models.BigIntegerField(unique=True)
     is_admin = models.BooleanField(default=False)
     username = models.CharField(max_length=255, null=True, blank=True)
 
