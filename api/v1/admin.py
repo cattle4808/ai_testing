@@ -25,7 +25,6 @@ from datetime import datetime, timedelta
 from .models import TgUsers, IdScript, Answer, Referral
 
 
-# Кастомные фильтры
 class ActiveScriptFilter(admin.SimpleListFilter):
     title = 'Статус активности'
     parameter_name = 'activity_status'
@@ -110,7 +109,6 @@ class ReferralCountFilter(admin.SimpleListFilter):
             return queryset.annotate(ref_count=Count('referred_users')).filter(ref_count__gte=5).order_by('-ref_count')
 
 
-# Продвинутый Admin для TgUsers
 @admin.register(TgUsers)
 class TgUsersAdmin(admin.ModelAdmin):
     list_display = [
@@ -267,7 +265,6 @@ class TgUsersAdmin(admin.ModelAdmin):
 
     user_activity_chart.short_description = 'График активности'
 
-    # Действия
     def make_admin(self, request, queryset):
         updated = queryset.update(is_admin=True)
         self.message_user(request, f'{updated} пользователей назначены администраторами.')
@@ -310,7 +307,7 @@ class TgUsersAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def user_detailed_stats(self, request, user_id):
-        tg_user = get_object_or_404(TgUsers, pk=user_id)  # Изменено: user -> tg_user
+        tg_user = get_object_or_404(TgUsers, pk=user_id)
 
         scripts = tg_user.scripts.all().annotate(
             answers_count=Count('answers')
@@ -319,7 +316,7 @@ class TgUsersAdmin(admin.ModelAdmin):
         referrals = tg_user.referred_users.all().order_by('-created_at')
 
         context = {
-            'tg_user': tg_user,  # Изменено: user -> tg_user
+            'tg_user': tg_user,
             'scripts': scripts,
             'referrals': referrals,
             'total_answers': sum(s.answers_count for s in scripts),
@@ -363,7 +360,6 @@ class TgUsersAdmin(admin.ModelAdmin):
 
 
 
-# Продвинутый Admin для IdScript
 @admin.register(IdScript)
 class IdScriptAdmin(admin.ModelAdmin):
     list_display = [
@@ -587,7 +583,6 @@ class IdScriptAdmin(admin.ModelAdmin):
 
     time_analytics.short_description = 'Временная аналитика'
 
-    # Действия
     def activate_scripts(self, request, queryset):
         updated = queryset.update(is_active=True)
         self.message_user(request, f'{updated} скриптов активировано.')
@@ -687,7 +682,6 @@ class IdScriptAdmin(admin.ModelAdmin):
         return TemplateResponse(request, 'admin/scripts_analytics.html', context)
 
 
-# Продвинутый Admin для Answer
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
     list_display = [
@@ -1121,7 +1115,6 @@ class CustomAdminSite(AdminSite):
 
         thirty_days_ago = datetime.now() - timedelta(days=30)
 
-        # Используем TruncDate вместо extra()
         daily_registrations = TgUsers.objects.filter(
             created_at__gte=thirty_days_ago
         ).annotate(
@@ -1150,7 +1143,6 @@ class CustomAdminSite(AdminSite):
         ).order_by('-count')
 
         seven_days_ago = datetime.now() - timedelta(days=7)
-        # Используем Extract вместо extra()
         hourly_activity = Answer.objects.filter(
             created_at__gte=seven_days_ago
         ).annotate(
@@ -1227,18 +1219,15 @@ class CustomAdminSite(AdminSite):
             'total_answers': total_answers,
             'total_referrals': total_referrals,
 
-            # Активные показатели
             'active_scripts': active_scripts,
             'admin_users': admin_users,
             'used_referrals': used_referrals,
             'answers_today': answers_today,
 
-            # Проценты и конверсии
             'active_scripts_percent': round((active_scripts / total_scripts * 100) if total_scripts > 0 else 0, 1),
             'admin_percent': round((admin_users / total_users * 100) if total_users > 0 else 0, 1),
             'referral_conversion': round(referral_conversion, 1),
 
-            # Данные для графиков (JSON)
             'daily_registrations': list(daily_registrations),
             'daily_usage': list(daily_usage),
             'hourly_activity': list(hourly_activity),
