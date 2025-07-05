@@ -14,6 +14,9 @@ class CommandMap:
         BUY_SCRIPT = "Купить скрипт"
         MY_SCRIPTS = "Мои скрипты"
         MY_DATA = "Мои данные"
+        INSTRUCTION = "Инструкции"
+        SUPPORT = "Поддержка"
+
 
     class Admin:
         DEV_MENU = "Dev_menu"

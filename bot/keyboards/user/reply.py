@@ -1,15 +1,20 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
+from bot import CommandMap
+
 def main_menu():
     return ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text='Купить скрипт'),
-                KeyboardButton(text='Мои скрипты'),
+                KeyboardButton(text=CommandMap.User.BUY_SCRIPT),
+                KeyboardButton(text=CommandMap.User.MY_SCRIPTS),
             ],
             [
-                KeyboardButton(text='Инструкция'),
-                KeyboardButton(text='Поддержка'),
+                KeyboardButton(text=CommandMap.User.MY_DATA),
+                KeyboardButton(text=CommandMap.User.INSTRUCTION)
+            ],
+            [
+                KeyboardButton(text=CommandMap.User.SUPPORT),
             ]
         ],
         resize_keyboard=True
