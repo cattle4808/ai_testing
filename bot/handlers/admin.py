@@ -4,7 +4,7 @@ from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from bot import dp
+from bot import CommandMap
 
 admin = Router()
 
@@ -12,20 +12,8 @@ admin = Router()
 async def admin_panel(message: Message):
     await message.answer("Admin panel")
 
-@admin.message(F.text == "Dev_panel")
+@admin.message(F.text == CommandMap.Admin.DEV_MENU)
 async def dev_panel(message: Message):
     await message.answer("Dev panel")
-    await asyncio.sleep(1)
-    await message.reply("Dev panel.")
-    await asyncio.sleep(1)
-    await message.reply("Dev panel..")
-    await asyncio.sleep(1)
-    await message.reply("Dev panel...")
-    await asyncio.sleep(1)
-    await message.reply("Dev panel....")
-    await asyncio.sleep(1)
-    await message.reply("Dev panel.....")
-    await asyncio.sleep(1)
-    await message.reply("Dev panel......")
-    await asyncio.sleep(1)
-    await message.reply("Dev panel.......")
+
+

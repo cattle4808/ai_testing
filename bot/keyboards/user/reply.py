@@ -4,7 +4,7 @@ def main_menu():
     return ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text='Купить AI-помощник'),
+                KeyboardButton(text='Купить скрипт'),
                 KeyboardButton(text='Мои скрипты'),
             ],
             [

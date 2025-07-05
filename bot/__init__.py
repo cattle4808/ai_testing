@@ -6,3 +6,15 @@ bot = Bot(token=settings.BOT_TOKEN)
 storage = RedisStorage.from_url(settings.REDIS_URL)
 
 dp = Dispatcher(storage=storage)
+
+
+
+class CommandMap:
+    class User:
+        BUY_SCRIPT = "Купить скрипт"
+        MY_SCRIPTS = "Мои скрипты"
+        MY_DATA = "Мои данные"
+
+    class Admin:
+        DEV_MENU = "Dev_menu"
+
