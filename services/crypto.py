@@ -5,20 +5,15 @@ import hmac
 from cryptography.fernet import Fernet
 import time
 
-try:
-    from django.conf import settings
-    _DEFAULT_SECRET_KEY = settings.SECRET_KEY
-except ImportError:
-    _DEFAULT_SECRET_KEY = None
-
+from django.conf import settings
 
 
 class SimpleCipher:
     def __init__(self, secret_key: str = None):
         if secret_key is None:
-            if _DEFAULT_SECRET_KEY is None:
+            if settings.SECRET_KEY is None:
                 raise ValueError("SECRET_KEY is required. Either pass it explicitly or configure Django settings.")
-            secret_key = _DEFAULT_SECRET_KEY
+            secret_key = settings.SECRET_KEY
 
         key = hashlib.sha256(secret_key.encode()).digest()
         self.key = base64.urlsafe_b64encode(key)
@@ -38,9 +33,9 @@ class SimpleCipher:
 class CompactReferralCipher:
     def __init__(self, secret_key: str = None):
         if secret_key is None:
-            if _DEFAULT_SECRET_KEY is None:
+            if settings.SECRET_KEY is None:
                 raise ValueError("SECRET_KEY is required.")
-            secret_key = _DEFAULT_SECRET_KEY
+            secret_key = settings.SECRET_KEY
         self.secret_key = secret_key.encode()
 
     def encrypt_id(self, user_id: int) -> str:
@@ -91,3 +86,5 @@ class TgCrypto:
         return True
 
 
+cipher = CompactReferralCipher()
+print(cipher.decrypt_id("NjQzNTA3OTUxMiirDw8"))
