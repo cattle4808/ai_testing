@@ -20,7 +20,7 @@ def get_or_create_tg_user(user_id: int, ref_by: int = None) -> dict:
             print(f"[⚠️] Реферал с user_id={ref_by} не найден в базе.")
 
     user_dict = model_to_dict(user)
-    user_dict["referred_by"] = model_to_dict(user.referred_by) if user.referred_by else None
+    user_dict["referred_by"] = user.referred_by.user if user.referred_by else None
 
     return user_dict
 
