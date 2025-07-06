@@ -30,11 +30,11 @@ class CreateScriptView(views.APIView):
             username = payload.get("username", None)
             init_data = payload["initData"]
         except (ValueError, KeyError):
-            return Http404()
+            raise Http404()
 
         check_init_data = TgCrypto().verify_init_data(init_data)
         if not check_init_data:
-            return Http404()
+            raise Http404()
 
         script = operations.create_script(user_id=tg_id, start_at=start_str)
 
