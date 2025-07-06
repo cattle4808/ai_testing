@@ -248,7 +248,8 @@ def validate_init_data_strict(init_data: str, bot_token: str) -> bool:
         computed_hash = hmac.new(secret, "\n".join(data_to_check).encode(), hashlib.sha256).hexdigest()
 
         print(f"[DEBUG STRICT] Data to check: {data_to_check}")
-        print(f"[DEBUG STRICT] Joined: {repr('\\n'.join(data_to_check))}")
+        joined_data = repr('\n'.join(data_to_check))
+        print(f"[DEBUG STRICT] Joined: {joined_data}")
         print(f"[DEBUG STRICT] Computed: {computed_hash}")
         print(f"[DEBUG STRICT] Received: {hash_value}")
 
