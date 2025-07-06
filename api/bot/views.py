@@ -63,7 +63,7 @@ class CreateScriptView(views.APIView):
                                                       f"Used: {script.get('max_usage')}/{script.get('used')}\n"
                                                       f"Owner id: {script.get('max_usage')}")
             if referred_by:
-                add_to_referral = operations.add_to_referral(tg_user_id, referred_by)
+                add_to_referral = operations.add_to_referral(user.get('id'), user.get('referred_by'))
 
 
             return Response({"err": False})

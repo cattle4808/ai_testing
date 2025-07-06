@@ -29,11 +29,11 @@ def create_script(user_id: int, start_at: datetime, stop_at: datetime = None) ->
     if stop_at is None:
         stop_at = timezone.now() + timedelta(hours=2)
 
-    def_get_referrals = models.Referral.objects.filter(invite__user=user_id, used=False)
-    if def_get_referrals.exists():
-        referral = def_get_referrals.first()
-        referral.used = True
-        referral.save()
+    # def_get_referrals = models.Referral.objects.filter(inviter=user_id, used=False)
+    # if def_get_referrals.exists():
+    #     referral = def_get_referrals.first()
+    #     referral.used = True
+    #     referral.save()
 
     script = models.IdScript.objects.create(
         owner=models.TgUsers.objects.get(user=user_id),
