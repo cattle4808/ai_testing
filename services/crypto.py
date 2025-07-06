@@ -60,6 +60,14 @@ class CompactReferralCipher:
         return None
 
 
+import hashlib
+import hmac
+import json
+import time
+from urllib.parse import parse_qsl, unquote
+from django.conf import settings
+
+
 class TgCrypto:
     def __init__(self, bot_token: str = None):
         if bot_token is None:
@@ -67,18 +75,31 @@ class TgCrypto:
                 raise ValueError("BOT_TOKEN is required. Either pass it explicitly or configure Django settings.")
             bot_token = settings.BOT_TOKEN
 
+        # ИСПРАВЛЕНО: Правильная генерация секретного ключа для Web App
         self.SECRET_KEY = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
 
     def _parse_init_data(self, init_data: str) -> tuple[dict, str]:
-        data = dict(urllib.parse.parse_qsl(init_data, keep_blank_values=True))
-        hash_check = data.pop("hash", None)
-        data.pop("signature", None)
+        # ИСПРАВЛЕНО: Используем parse_qsl для правильного парсинга
+        try:
+            data = dict(parse_qsl(init_data, keep_blank_values=True, strict_parsing=True))
+        except ValueError as e:
+            print(f"[DEBUG] Failed to parse init_data: {e}")
+            return {}, None
 
+        hash_check = data.pop("hash", None)
+        data.pop("signature", None)  # Удаляем signature если есть
+
+        # ИСПРАВЛЕНО: Применяем unquote к значениям
+        for key, value in data.items():
+            data[key] = unquote(value)
+
+        # Нормализация JSON для user
         if "user" in data:
             try:
                 user_dict = json.loads(data["user"])
+                # ИСПРАВЛЕНО: Правильная сериализация JSON
                 data["user"] = json.dumps(user_dict, separators=(",", ":"), sort_keys=True)
-            except Exception as e:
+            except (json.JSONDecodeError, TypeError) as e:
                 print(f"[DEBUG] Failed to normalize user JSON: {e}")
 
         return data, hash_check
@@ -87,33 +108,94 @@ class TgCrypto:
         return "\n".join(f"{k}={v}" for k, v in sorted(data.items()))
 
     def verify_init_data(self, init_data_str: str, max_age_sec: int = 86400) -> bool:
-        data, hash_check = self._parse_init_data(init_data_str)
-        check_string = self._build_check_string(data)
-        computed_hash = hmac.new(self.SECRET_KEY, check_string.encode(), hashlib.sha256).hexdigest()
+        try:
+            data, hash_check = self._parse_init_data(init_data_str)
 
-        print("[DEBUG] check_string:", check_string)
-        print("[DEBUG] computed_hash:", computed_hash)
-        print("[DEBUG] received_hash:", hash_check)
+            if not hash_check:
+                print("[DEBUG] No hash found in init_data")
+                return False
 
-        if not hmac.compare_digest(computed_hash, hash_check):
+            check_string = self._build_check_string(data)
+
+            # ИСПРАВЛЕНО: Правильная последовательность параметров в hmac.new()
+            computed_hash = hmac.new(
+                self.SECRET_KEY,  # key (первый параметр)
+                check_string.encode(),  # msg (второй параметр)
+                hashlib.sha256  # digestmod (третий параметр)
+            ).hexdigest()
+
+            print(f"[DEBUG] Raw init_data: {init_data_str}")
+            print(f"[DEBUG] Parsed data: {data}")
+            print(f"[DEBUG] Check string: {repr(check_string)}")
+            print(f"[DEBUG] SECRET_KEY (hex): {self.SECRET_KEY.hex()}")
+            print(f"[DEBUG] Computed hash: {computed_hash}")
+            print(f"[DEBUG] Received hash: {hash_check}")
+
+            if not hmac.compare_digest(computed_hash, hash_check):
+                print("[DEBUG] Hash mismatch!")
+                return False
+
+            # Проверка времени
+            auth_date = data.get("auth_date")
+            if not auth_date:
+                print("[DEBUG] No auth_date found")
+                return False
+
+            try:
+                auth_date = int(auth_date)
+                now = int(time.time())
+                if abs(now - auth_date) > max_age_sec:
+                    print(f"[DEBUG] Data too old: {abs(now - auth_date)} seconds")
+                    return False
+            except (ValueError, TypeError) as e:
+                print(f"[DEBUG] Invalid auth_date: {e}")
+                return False
+
+            return True
+
+        except Exception as e:
+            print(f"[DEBUG] Verification failed with exception: {e}")
             return False
 
-        auth_date = int(data.get("auth_date", 0))
-        now = int(time.time())
-        if abs(now - auth_date) > max_age_sec:
-            return False
-        return True
-# user_id = 6435079512
-#
-#
-# cipher = CompactReferralCipher()
-#
-# code = cipher.encrypt_id(user_id)
-# print("🔐 Encrypted code:", code)
-#
-# decoded = cipher.decrypt_id(code)
-# print("🔓 Decrypted user_id:", decoded)
-#
-# from django.conf import settings
-# print(settings.SECRET_KEY)
 
+# Альтернативная упрощенная функция (как в рабочих примерах)
+def validate_telegram_webapp_data(init_data: str, bot_token: str) -> bool:
+    """
+    Упрощенная функция валидации на основе рабочих примеров из GitHub
+    """
+    try:
+        # Парсим данные
+        hash_string = ""
+        init_data_dict = {}
+
+        for chunk in init_data.split("&"):
+            key, value = chunk.split("=", 1)
+            if key == "hash":
+                hash_string = value
+                continue
+            init_data_dict[key] = unquote(value)
+
+        if not hash_string:
+            return False
+
+        # Строим строку для проверки
+        data_check_string = "\n".join([
+            f"{key}={init_data_dict[key]}"
+            for key in sorted(init_data_dict.keys())
+        ])
+
+        # Генерируем секретный ключ
+        secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+
+        # Вычисляем хеш
+        computed_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+
+        print(f"[DEBUG] Data check string: {repr(data_check_string)}")
+        print(f"[DEBUG] Computed hash: {computed_hash}")
+        print(f"[DEBUG] Received hash: {hash_string}")
+
+        return computed_hash == hash_string
+
+    except Exception as e:
+        print(f"[DEBUG] Validation error: {e}")
+        return False
