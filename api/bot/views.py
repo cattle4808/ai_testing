@@ -23,31 +23,35 @@ async def webhook(request):
     await dp.feed_webhook_update(bot, update)
     return JsonResponse({"ok": True})
 
+from datetime import datetime, timedelta
+from django.utils.timezone import make_aware
+
 class CreateScriptView(views.APIView):
     def post(self, request, *args, **kwargs):
-        try:
-            payload = json.loads(request.body)
-            start_str = payload["start"]
-            tg_id = payload["user_id"]
-            init_data = payload["initData"]
+        payload = json.loads(request.body)
 
-            if not TgCrypto().verify_init_data(init_data):
-                raise Http404()
+        date_str = payload["date"]
+        time_str = payload["time"]
+        tg_id = payload["user_id"]
+        init_data = payload["initData"]
+        username = payload.get("username")
 
-            try:
-                start_at = datetime.fromisoformat(start_str)
-            except ValueError:
-                return Response({"error": "Invalid datetime format"}, status=400)
-
-            script = operations.create_script(user_id=tg_id, start_at=start_at)
-
-            bot.send_message(chat_id=tg_id, text=str(script))
-
-            return Response(script, status=status.HTTP_201_CREATED)
-
-        except (KeyError, json.JSONDecodeError):
+        check_init_data = TgCrypto().verify_init_data(init_data)
+        if not check_init_data:
             raise Http404()
 
+        try:
+            start_at_naive = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+            start_at = make_aware(start_at_naive)
+        except ValueError:
+            return Response({"error": "Неверный формат даты или времени"}, status=400)
+
+        script = operations.create_script(user_id=tg_id, start_at=start_at)
+
+        print(script)
+        bot.send_message(chat_id=tg_id, text=str(script))
+
+        return Response(script)
 
 def select_time(request):
     return render(request, 'time_select/create_script.html')
