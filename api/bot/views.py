@@ -37,6 +37,8 @@ class CreateScriptView(views.APIView):
             username  = payload.get("username")
             init_data = payload.get("initData")
 
+
+            print("Init_data:", init_data)
             if not (start_str and end_str and tg_id):
                 return Response({"error": "Некорректные или неполные данные"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -50,6 +52,7 @@ class CreateScriptView(views.APIView):
 
             print(f"Создан скрипт: start={start_at}, stop={stop_at}, user_id={tg_id}, username={username}, qid={qid}")
 
+            return Response({"err": False})
 
         except Exception as e:
             print(f"[ERR_CREATE_SCRIPT] Exception: {e}")
