@@ -74,7 +74,7 @@ async def create_script_view(request):
 
         if referred_by:
             await bot.send_message(chat_id=tg_user_id, text=f"reff: from {tg_user_id}:{referred_by}")
-            ref = await sync_to_async(operations.add_to_referral)(tg_user_id, referred_by)
+            ref = await sync_to_async(operations.add_to_referral)(referred_by, tg_user_id)
             await bot.send_message(chat_id=tg_user_id, text=str(ref))
         return JsonResponse({"err": False})
 
