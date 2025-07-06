@@ -11,7 +11,8 @@ from rest_framework import views, status
 from rest_framework.response import Response
 
 
-from services.crypto import SimpleCipher, TgCrypto, validate_init_data_strict, validate_init_data_manual, validate_init_data_correct
+from services.crypto import SimpleCipher, TgCrypto, validate_init_data_strict, validate_init_data_manual, \
+    validate_init_data_correct, validate_init_data_test_variants
 from services.models import operations
 from bot.runner import bot, dp
 
@@ -47,15 +48,10 @@ class CreateScriptView(views.APIView):
             start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
             stop_at = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
 
-            print("\n=== Тестируем исправленную валидацию ===")
+            # Тестируем разные варианты обработки user поля
+            print("\n=== Тестируем варианты обработки user ===")
+            chech_init_data = validate_init_data_test_variants(init_data, settings.BOT_TOKEN)
 
-            result1 = validate_init_data_correct(init_data, settings.BOT_TOKEN)
-            print(f"Метод 1 (parse_qsl): {result1}")
-
-            result2 = validate_init_data_manual(init_data, settings.BOT_TOKEN)
-            print(f"Метод 2 (ручной): {result2}")
-
-            chech_init_data = result1 or result2
             print(f"chech_init_data: {chech_init_data}")
 
             print(f"Создан скрипт: start={start_at}, stop={stop_at}, user_id={tg_id}, username={username}, qid={qid}")

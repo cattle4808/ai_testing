@@ -255,7 +255,111 @@ def validate_init_data_strict(init_data: str, bot_token: str) -> bool:
 
 import hashlib
 import hmac
-from urllib.parse import parse_qsl
+from urllib.parse import parse_qsl, unquote
+
+
+def validate_init_data_hybrid(init_data: str, bot_token: str) -> bool:
+    """
+    Гибридный метод - комбинация URL-декодирования и сохранения оригинальной структуры
+    """
+    try:
+        hash_value = None
+        data_dict = {}
+
+        # Ручной парсинг
+        for chunk in init_data.split("&"):
+            if "=" not in chunk:
+                continue
+            key, value = chunk.split("=", 1)
+            if key == "hash":
+                hash_value = value
+            elif key != "signature":
+                # Частично декодируем только определенные символы
+                if key == "user":
+                    # Для user декодируем только основные символы, но оставляем экранированные слеши
+                    value_decoded = unquote(value)
+                    # Возвращаем экранированные слеши
+                    value_decoded = value_decoded.replace("/", "\\/")
+                    data_dict[key] = value_decoded
+                else:
+                    # Для остальных полей полное декодирование
+                    data_dict[key] = unquote(value)
+
+        if not hash_value:
+            return False
+
+        # Формируем строку для проверки
+        data_check_string = "\n".join(f"{key}={value}" for key, value in sorted(data_dict.items()))
+
+        # Генерируем секрет и хеш
+        secret = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+        computed_hash = hmac.new(secret, data_check_string.encode(), hashlib.sha256).hexdigest()
+
+        print(f"[HYBRID] Data check string: {repr(data_check_string)}")
+        print(f"[HYBRID] Computed hash: {computed_hash}")
+        print(f"[HYBRID] Received hash: {hash_value}")
+
+        return computed_hash == hash_value
+
+    except Exception as e:
+        print(f"[HYBRID] Error: {e}")
+        return False
+
+
+def validate_init_data_test_variants(init_data: str, bot_token: str) -> bool:
+    """
+    Тестируем разные варианты обработки user поля
+    """
+    try:
+        hash_value = None
+        data_dict = {}
+
+        # Парсим основные данные
+        for chunk in init_data.split("&"):
+            if "=" not in chunk:
+                continue
+            key, value = chunk.split("=", 1)
+            if key == "hash":
+                hash_value = value
+            elif key != "signature":
+                if key != "user":
+                    data_dict[key] = unquote(value)
+                else:
+                    # Сохраняем raw user для тестирования
+                    user_raw = value
+
+        if not hash_value:
+            return False
+
+        # Тестируем разные варианты обработки user
+        user_variants = [
+            user_raw,  # 1. Как есть (URL-кодированный)
+            unquote(user_raw),  # 2. Полностью декодированный
+            unquote(user_raw).replace("/", "\\/"),  # 3. Декодированный + экранированные слеши
+        ]
+
+        secret = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+
+        for i, user_variant in enumerate(user_variants, 1):
+            test_data = dict(data_dict)
+            test_data["user"] = user_variant
+
+            data_check_string = "\n".join(f"{key}={value}" for key, value in sorted(test_data.items()))
+            computed_hash = hmac.new(secret, data_check_string.encode(), hashlib.sha256).hexdigest()
+
+            print(f"[VARIANT {i}] User: {repr(user_variant[:50])}...")
+            print(f"[VARIANT {i}] Hash: {computed_hash}")
+
+            if computed_hash == hash_value:
+                print(f"[SUCCESS] Variant {i} matches!")
+                return True
+
+        print(f"[TARGET] Expected: {hash_value}")
+        return False
+
+    except Exception as e:
+        print(f"[TEST] Error: {e}")
+        return False
 
 
 def validate_init_data_correct(init_data: str, bot_token: str) -> bool:
