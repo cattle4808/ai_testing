@@ -40,8 +40,8 @@ async def start_handler(message: types.Message, command: CommandStart):
 
     if await sync_to_async(operations.is_admin)(user_id):
         await message.answer("Вы администратор", reply_markup=admin_reply.main_menu())
-    else:
-        await message.answer(f"Привет, {username}!", reply_markup=user_reply.main_menu())
+
+    await message.answer(f"Привет, {username}!", reply_markup=user_reply.main_menu())
 
 
 
