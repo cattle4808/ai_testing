@@ -10,11 +10,11 @@ def cancel_keyboard():
         ]
     )
 
-def select_time(redis_id):
+def select_time():
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text='📅Выбрать время', web_app={"url": f"https://t.me/aihelper_bot?start={redis_id}"})
+                InlineKeyboardButton(text='📅Выбрать время', web_app={"https://jjks.site/api/bot/select_time/"})
             ]
         ]
     )

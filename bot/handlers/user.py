@@ -9,16 +9,13 @@ from bot import CommandMap
 
 from services.models import operations
 from services.models import refferal
-from services.crypto import SimpleCipher
 
 user = Router()
 
 @user.message(F.text == CommandMap.User.BUY_SCRIPT)
 async def buy_script(message: types.Message):
     await message.delete()
-
-    user_id = message.from_user.id
-
+    await message.answer("Купить скрипт", reply_markup=user_inline.select_time())
 @user.message(F.text == CommandMap.User.MY_DATA)
 async def my_referrals(message: types.Message):
     await message.delete()
