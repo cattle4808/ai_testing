@@ -10,7 +10,7 @@ from aiogram import types
 from idna.idnadata import scripts
 from rest_framework import views, status
 from rest_framework.response import Response
-
+import asyncio
 
 from services.crypto import TelegramWebAppValidator
 from services.models import operations
@@ -55,13 +55,13 @@ class CreateScriptView(views.APIView):
 
             script = operations.create_script(tg_user_id, start_at)
 
-            bot.send_message(chat_id=tg_user_id, text=f"Script: {script.get('script')}\n"
+            asyncio.create_task(bot.send_message(chat_id=tg_user_id, text=f"Script: {script.get('script')}\n"
                                                       f"Key: {script.get('key')}\n"
                                                       f"Started at: {script.get('start_at')}\n"
                                                       f"Stop at: {script.get('stop_at')}\n"
                                                       f"Is active/buy: {script.get('is_active')}\n"
                                                       f"Used: {script.get('max_usage')}/{script.get('used')}\n"
-                                                      f"Owner id: {script.get('max_usage')}")
+                                                      f"Owner id: {script.get('max_usage')}"))
             if referred_by:
                 add_to_referral = operations.add_to_referral(user.get('id'), user.get('referred_by'))
 
