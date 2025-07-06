@@ -14,7 +14,7 @@ def select_time():
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text='📅Выбрать время', web_app={"https://jjks.site/api/bot/select_time/"})
+                InlineKeyboardButton(text='📅Выбрать время', web_app={"url": "https://jjks.site/api/bot/select_time/"})
             ]
         ]
     )
