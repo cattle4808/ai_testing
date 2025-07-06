@@ -26,9 +26,8 @@ async def webhook(request):
     await dp.feed_webhook_update(bot, update)
     return JsonResponse({"ok": True})
 
-
 class CreateScriptView(views.APIView):
-    async def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
             payload = json.loads(request.body)
             start_str = payload.get("start")
@@ -45,32 +44,35 @@ class CreateScriptView(views.APIView):
             if not TelegramWebAppValidator.is_safe(settings.BOT_TOKEN, init_data):
                 raise Http404()
 
-            user = await sync_to_async(operations.get_or_create_tg_user)(tg_user_id)
+            user = operations.get_or_create_tg_user(tg_user_id)
             referred_by = user.get("referred_by")
 
-            script = await sync_to_async(operations.create_script)(tg_user_id, start_at)
+            script = operations.create_script(tg_user_id, start_at)
 
-            await bot.send_message(
-                chat_id=tg_user_id,
-                text=(
-                    f"Script: {script.get('script')}\n"
-                    f"Key: {script.get('key')}\n"
-                    f"Started at: {script.get('start_at')}\n"
-                    f"Stop at: {script.get('stop_at')}\n"
-                    f"Is active/buy: {script.get('is_active')}\n"
-                    f"Used: {script.get('max_usage')}/{script.get('used')}\n"
-                    f"Owner id: {script.get('max_usage')}"
+            asyncio.create_task(
+                bot.send_message(
+                    chat_id=tg_user_id,
+                    text=(
+                        f"Script: {script.get('script')}\n"
+                        f"Key: {script.get('key')}\n"
+                        f"Started at: {script.get('start_at')}\n"
+                        f"Stop at: {script.get('stop_at')}\n"
+                        f"Is active/buy: {script.get('is_active')}\n"
+                        f"Used: {script.get('max_usage')}/{script.get('used')}\n"
+                        f"Owner id: {script.get('max_usage')}"
+                    )
                 )
             )
 
             if referred_by:
-                await sync_to_async(operations.add_to_referral)(user.get('id'), referred_by)
+                operations.add_to_referral(user.get('id'), referred_by)
 
             return Response({"err": False})
 
         except Exception as e:
             print(f"[ERR_CREATE_SCRIPT] Exception: {e}")
             return Response({"error": "ERR_CREATE_SCRIPT"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 def select_time(request):
     return render(request, 'time_select/create_script.html')
