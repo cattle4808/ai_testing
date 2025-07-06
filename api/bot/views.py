@@ -41,7 +41,7 @@ class CreateScriptView(views.APIView):
             username = payload.get("username")
             init_data = payload.get("initData")
 
-            if not (start_str and end_str and tg_id):
+            if not (start_str and end_str and tg_user_id):
                 raise Http404()
 
             start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
