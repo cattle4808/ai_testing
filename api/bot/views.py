@@ -1,6 +1,7 @@
 import json
 from sys import set_coroutine_origin_tracking_depth
 
+from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -29,7 +30,6 @@ async def webhook(request):
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 
-
 class CreateScriptView(views.APIView):
     async def post(self, request, *args, **kwargs):
         try:
@@ -53,24 +53,30 @@ class CreateScriptView(views.APIView):
             user = operations.get_or_create_tg_user(tg_user_id)
             referred_by = user.get("referred_by")
 
-            script = operations.create_script(tg_user_id, start_at)
+            script = await operations.create_script(tg_user_id, start_at)  # 👈 если async
 
-            await bot.send_message(chat_id=tg_user_id, text=f"Script: {script.get('script')}\n"
-                                                      f"Key: {script.get('key')}\n"
-                                                      f"Started at: {script.get('start_at')}\n"
-                                                      f"Stop at: {script.get('stop_at')}\n"
-                                                      f"Is active/buy: {script.get('is_active')}\n"
-                                                      f"Used: {script.get('max_usage')}/{script.get('used')}\n"
-                                                      f"Owner id: {script.get('max_usage')}")
+            await bot.send_message(
+                chat_id=tg_user_id,
+                text=(
+                    f"Script: {script.get('script')}\n"
+                    f"Key: {script.get('key')}\n"
+                    f"Started at: {script.get('start_at')}\n"
+                    f"Stop at: {script.get('stop_at')}\n"
+                    f"Is active/buy: {script.get('is_active')}\n"
+                    f"Used: {script.get('max_usage')}/{script.get('used')}\n"
+                    f"Owner id: {script.get('max_usage')}"
+                )
+            )
+
             if referred_by:
-                add_to_referral = operations.add_to_referral(user.get('id'), user.get('referred_by'))
-
+                 sync_to_async(operations.add_to_referral)(user.get('id'), referred_by)
 
             return Response({"err": False})
 
         except Exception as e:
             print(f"[ERR_CREATE_SCRIPT] Exception: {e}")
             return Response({"error": "ERR_CREATE_SCRIPT"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 def select_time(request):
     return render(request, 'time_select/create_script.html')
