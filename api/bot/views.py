@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 import asyncio
 
+from api.v1.serializers import parse_tashkent_datetime
 from services.crypto import TelegramWebAppValidator
 from services.models import operations
 from bot.runner import bot, dp
@@ -51,7 +52,9 @@ async def create_script_view(request):
 
         user = await sync_to_async(operations.get_or_create_tg_user)(tg_user_id)
         referred_by = user.get("referred_by")
-        print(user)
+
+        print("User:", user)
+        print("refferd_bu", referred_by)
 
         script = await sync_to_async(operations.create_script)(tg_user_id, start_at)
 
