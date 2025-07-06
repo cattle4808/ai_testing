@@ -92,7 +92,7 @@ def get_my_scripts(user_id: int) -> list:
 
 @catch_error("ERR_GET_REFERRALS_COUNTS")
 def get_referrals_counts(user_id: int) -> dict:
-    referrals = models.Referral.objects.filter(inviter_id=user_id)
+    referrals = models.Referral.objects.filter(inviter__user=user_id)
     all_referrals = [
         model_to_dict(ref, fields=['id', 'used', 'created_at']) for ref in referrals
     ]
