@@ -59,6 +59,8 @@ class CompactReferralCipher:
         return None
 
 
+
+
 class TgCrypto:
     def __init__(self, bot_token: str = None):
         if bot_token is None:
@@ -70,6 +72,7 @@ class TgCrypto:
     def _parse_init_data(self, init_data: str) -> tuple[dict, str]:
         data = dict(urllib.parse.parse_qsl(init_data, keep_blank_values=True))
         hash_check = data.pop("hash", None)
+        data.pop("signature", None)
         return data, hash_check
 
     def _build_check_string(self, data: dict) -> str:
@@ -79,16 +82,19 @@ class TgCrypto:
         data, hash_check = self._parse_init_data(init_data_str)
         check_string = self._build_check_string(data)
         computed_hash = hmac.new(self.SECRET_KEY, check_string.encode(), hashlib.sha256).hexdigest()
+
+        print("[DEBUG] check_string:", check_string)
+        print("[DEBUG] computed_hash:", computed_hash)
+        print("[DEBUG] received_hash:", hash_check)
+
         if not hmac.compare_digest(computed_hash, hash_check):
             return False
+
         auth_date = int(data.get("auth_date", 0))
         now = int(time.time())
         if abs(now - auth_date) > max_age_sec:
             return False
         return True
-
-
-
 # user_id = 6435079512
 #
 #
