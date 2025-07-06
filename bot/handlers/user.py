@@ -17,8 +17,8 @@ async def buy_script(message: types.Message):
     await message.delete()
     await message.answer("Выберите скрипт")
 
-@user.message(F.text == CommandMap.User.MY_SCRIPTS)
-async def my_scripts(message: types.Message):
+@user.message(F.text == CommandMap.User.MY_DATA)
+async def my_referrals(message: types.Message):
     await message.delete()
     await message.answer("Рефералы")
 
@@ -35,10 +35,6 @@ async def my_scripts(message: types.Message):
                          f"Подробнее покупки: {refferal_buys['all']}"
                          )
 
-
-
-
-
 @user.message(F.text == CommandMap.User.INSTRUCTION)
 async def instruction(message: types.Message):
     await message.delete()
@@ -49,8 +45,8 @@ async def support(message: types.Message):
     await message.delete()
     await message.answer("Поддержка")
 
-@user.message(F.text == CommandMap.User.MY_DATA)
-async def my_data(message: types.Message):
+@user.message(F.text == CommandMap.User.MY_SCRIPTS)
+async def my_shops(message: types.Message):
     await message.delete()
     await message.answer("Мои данные")
 
