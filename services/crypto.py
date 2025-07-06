@@ -224,31 +224,25 @@ def validate_telegram_webapp_data(init_data: str, bot_token: str) -> bool:
 
 # Еще одна альтернативная функция - точная копия рабочего примера
 def validate_init_data_strict(init_data: str, bot_token: str) -> bool:
-    """
-    Строгая валидация - точная копия рабочего примера из GitHub
-    """
     try:
         from urllib.parse import parse_qs
 
-        # Парсим как URL параметры
         init_data_parsed = parse_qs(init_data)
         hash_value = init_data_parsed.get('hash', [None])[0]
 
         if not hash_value:
             return False
 
-        # Собираем данные для проверки (исключаем hash и signature)
         data_to_check = []
         sorted_items = sorted((key, val[0]) for key, val in init_data_parsed.items()
                               if key not in ['hash', 'signature'])
         data_to_check = [f"{key}={value}" for key, value in sorted_items]
 
-        # HMAC вычисление
         secret = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
         computed_hash = hmac.new(secret, "\n".join(data_to_check).encode(), hashlib.sha256).hexdigest()
 
         print(f"[DEBUG STRICT] Data to check: {data_to_check}")
-        joined_data = repr('\n'.join(data_to_check))
+        joined_data = repr('\\n'.join(data_to_check))
         print(f"[DEBUG STRICT] Joined: {joined_data}")
         print(f"[DEBUG STRICT] Computed: {computed_hash}")
         print(f"[DEBUG STRICT] Received: {hash_value}")
