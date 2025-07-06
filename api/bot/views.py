@@ -69,7 +69,7 @@ async def create_script_view(request):
         )
 
         if referred_by:
-            await sync_to_async(operations.add_to_referral)(user.get("id"), referred_by)
+            await sync_to_async(operations.add_to_referral)(tg_user_id, referred_by)
 
         return JsonResponse({"err": False})
 

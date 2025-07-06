@@ -56,13 +56,16 @@ def create_script(user_id: int, start_at: datetime, stop_at: datetime = None) ->
 
 
 @catch_error("ERR_ADD_TO_REFERRAL")
-def add_to_referral(inviter, invited) -> dict:
-    ref = models.Referral.objects.create(inviter=inviter, invited=invited)
-    data = model_to_dict(ref, fields=['id', 'used', 'created_at'])
-    data['inviter_user_id'] = ref.inviter.user_id
-    data['invited_user_id'] = ref.invited.user_id
-    return data
+def add_to_referral(inviter_user_id: int, invited_user_id: int) -> dict:
+    inviter = models.TgUsers.objects.get(user=inviter_user_id)
+    invited = models.TgUsers.objects.get(user=invited_user_id)
 
+    ref = models.Referral.objects.create(inviter=inviter, invited=invited)
+
+    data = model_to_dict(ref, fields=['id', 'used', 'created_at'])
+    data['inviter_user_id'] = inviter.user
+    data['invited_user_id'] = invited.user
+    return data
 
 @catch_error("ERR_CHANGE_SCRIPT_STATUS")
 def change_script_status(key, is_active: bool) -> dict:
