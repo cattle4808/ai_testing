@@ -40,9 +40,9 @@ async def show_faq(callback: types.CallbackQuery):
 
 
 @user_callback.callback_query(F.data == "back_to_support")
-async def support(message: types.Message):
-    await message.delete()
-    await message.answer(
+async def support(callback: types.CallbackQuery):
+    await callback.message.delete()
+    await callback.message.answer(
         "<b>🛠 Служба поддержки</b>\n\n"
         "Мы ценим ваше доверие и всегда готовы помочь.\n"
         "Если у вас возникли сложности — обращайтесь напрямую. "
