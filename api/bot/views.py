@@ -6,6 +6,8 @@ from django.http import Http404
 from aiogram import types
 from idna.idnadata import scripts
 from rest_framework import views
+from rest_framework.response import Response
+
 
 from services.crypto import SimpleCipher, TgCrypto
 from services.models import operations
@@ -23,24 +25,28 @@ async def webhook(request):
 
 class CreateScriptView(views.APIView):
     def post(self, request, *args, **kwargs):
-        # try:
-        payload = json.loads(request.body)
-        start_str = payload["start"]
-        tg_id = payload["user_id"]
-        username = payload.get("username", None)
-        init_data = payload["initData"]
-        # except (ValueError, KeyError):
-        #     raise Http404()
+        try:
+            payload = json.loads(request.body)
+            start_str = payload["start"]
+            tg_id = payload["user_id"]
+            init_data = payload["initData"]
 
-        check_init_data = TgCrypto().verify_init_data(init_data)
-        # if not check_init_data:
-        #     raise Http404()
+            if not TgCrypto().verify_init_data(init_data):
+                raise Http404()
 
-        script = operations.create_script(user_id=tg_id, start_at=start_str)
+            try:
+                start_at = datetime.fromisoformat(start_str)
+            except ValueError:
+                return Response({"error": "Invalid datetime format"}, status=400)
 
-        print(script)
+            script = operations.create_script(user_id=tg_id, start_at=start_at)
 
-        bot.send_message(chat_id=tg_id, text=str(script))
+            bot.send_message(chat_id=tg_id, text=str(script))
+
+            return Response(script, status=status.HTTP_201_CREATED)
+
+        except (KeyError, json.JSONDecodeError):
+            raise Http404()
 
 
 def select_time(request):
