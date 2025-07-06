@@ -1,4 +1,6 @@
 import json
+import traceback
+
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.http import JsonResponse
@@ -26,52 +28,54 @@ async def webhook(request):
     await dp.feed_webhook_update(bot, update)
     return JsonResponse({"ok": True})
 
-class CreateScriptView(views.APIView):
-    def post(self, request, *args, **kwargs):
-        try:
-            payload = json.loads(request.body)
-            start_str = payload.get("start")
-            end_str = payload.get("end")
-            tg_user_id = payload.get("user_id")
-            init_data = payload.get("initData")
 
-            if not (start_str and end_str and tg_user_id):
-                raise Http404()
+@csrf_exempt
+async def create_script_view(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+    try:
+        payload = json.loads(request.body)
+        start_str = payload.get("start")
+        end_str = payload.get("end")
+        tg_user_id = payload.get("user_id")
+        init_data = payload.get("initData")
 
-            start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
-            stop_at = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
+        if not (start_str and end_str and tg_user_id):
+            raise Http404()
 
-            if not TelegramWebAppValidator.is_safe(settings.BOT_TOKEN, init_data):
-                raise Http404()
+        start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
+        stop_at = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
 
-            user = operations.get_or_create_tg_user(tg_user_id)
-            referred_by = user.get("referred_by")
+        if not TelegramWebAppValidator.is_safe(settings.BOT_TOKEN, init_data):
+            raise Http404()
 
-            script = operations.create_script(tg_user_id, start_at)
+        user = await sync_to_async(operations.get_or_create_tg_user)(tg_user_id)
+        referred_by = user.get("referred_by")
 
-            asyncio.create_task(
-                bot.send_message(
-                    chat_id=tg_user_id,
-                    text=(
-                        f"Script: {script.get('script')}\n"
-                        f"Key: {script.get('key')}\n"
-                        f"Started at: {script.get('start_at')}\n"
-                        f"Stop at: {script.get('stop_at')}\n"
-                        f"Is active/buy: {script.get('is_active')}\n"
-                        f"Used: {script.get('max_usage')}/{script.get('used')}\n"
-                        f"Owner id: {script.get('max_usage')}"
-                    )
-                )
+        script = await sync_to_async(operations.create_script)(tg_user_id, start_at)
+
+        await bot.send_message(
+            chat_id=tg_user_id,
+            text=(
+                f"Script: {script.get('script')}\n"
+                f"Key: {script.get('key')}\n"
+                f"Started at: {script.get('start_at')}\n"
+                f"Stop at: {script.get('stop_at')}\n"
+                f"Is active/buy: {script.get('is_active')}\n"
+                f"Used: {script.get('max_usage')}/{script.get('used')}\n"
+                f"Owner id: {script.get('max_usage')}"
             )
+        )
 
-            if referred_by:
-                operations.add_to_referral(user.get('id'), referred_by)
+        if referred_by:
+            await sync_to_async(operations.add_to_referral)(user.get("id"), referred_by)
 
-            return Response({"err": False})
+        return JsonResponse({"err": False})
 
-        except Exception as e:
-            print(f"[ERR_CREATE_SCRIPT] Exception: {e}")
-            return Response({"error": "ERR_CREATE_SCRIPT"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        print(f"[ERR_CREATE_SCRIPT] Exception: {e}")
+        traceback.print_exc()
+        return JsonResponse({"error": "ERR_CREATE_SCRIPT"}, status=500)
 
 
 def select_time(request):

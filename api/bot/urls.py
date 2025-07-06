@@ -6,7 +6,7 @@ from api.bot import views
 urlpatterns = [
     path('webhook/', views.webhook),
 
-    path('create_script_select_time/', views.CreateScriptView.as_view()),
+    path('create_script_select_time/', views.create_script_view),
     path('select_time/', views.select_time)
     # path('select_time/', )
 ]
