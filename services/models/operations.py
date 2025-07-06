@@ -10,8 +10,12 @@ def get_or_create_tg_user(user_id: int, ref_by: int = None) -> dict:
     user, created = models.TgUsers.objects.get_or_create(user=user_id)
 
     if created and ref_by:
-        user.referred_by = ref_by
-        user.save()
+        try:
+            ref_user = models.TgUsers.objects.get(user=ref_by)
+            user.referred_by = ref_user
+            user.save()
+        except models.TgUsers.DoesNotExist:
+            print(f"[⚠️] Реферал с user_id={ref_by} не найден в базе.")
 
     return model_to_dict(user)
 
