@@ -11,7 +11,7 @@ from rest_framework import views, status
 from rest_framework.response import Response
 
 
-from services.crypto import SimpleCipher, TgCrypto, validate_init_data_strict
+from services.crypto import SimpleCipher, TgCrypto, validate_init_data_strict, validate_init_data_manual, validate_init_data_correct
 from services.models import operations
 from bot.runner import bot, dp
 
@@ -28,29 +28,35 @@ async def webhook(request):
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 
+
 class CreateScriptView(views.APIView):
     def post(self, request, *args, **kwargs):
         try:
             payload = json.loads(request.body)
             start_str = payload.get("start")
-            end_str   = payload.get("end")
-            qid       = payload.get("qid")
-            tg_id     = payload.get("user_id")
-            username  = payload.get("username")
+            end_str = payload.get("end")
+            qid = payload.get("qid")
+            tg_id = payload.get("user_id")
+            username = payload.get("username")
             init_data = payload.get("initData")
-
 
             print("Init_data:", init_data)
             if not (start_str and end_str and tg_id):
                 return Response({"error": "Некорректные или неполные данные"}, status=status.HTTP_400_BAD_REQUEST)
 
             start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
-            stop_at  = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
+            stop_at = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
 
-            chech_init_data = validate_init_data_strict(init_data, settings.BOT_TOKEN)
+            print("\n=== Тестируем исправленную валидацию ===")
 
-            print("chech_init_data:", chech_init_data)
+            result1 = validate_init_data_correct(init_data, settings.BOT_TOKEN)
+            print(f"Метод 1 (parse_qsl): {result1}")
 
+            result2 = validate_init_data_manual(init_data, settings.BOT_TOKEN)
+            print(f"Метод 2 (ручной): {result2}")
+
+            chech_init_data = result1 or result2
+            print(f"chech_init_data: {chech_init_data}")
 
             print(f"Создан скрипт: start={start_at}, stop={stop_at}, user_id={tg_id}, username={username}, qid={qid}")
 

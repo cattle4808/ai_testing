@@ -222,7 +222,6 @@ def validate_telegram_webapp_data(init_data: str, bot_token: str) -> bool:
         return False
 
 
-# Еще одна альтернативная функция - точная копия рабочего примера
 def validate_init_data_strict(init_data: str, bot_token: str) -> bool:
     try:
         from urllib.parse import parse_qs
@@ -251,4 +250,91 @@ def validate_init_data_strict(init_data: str, bot_token: str) -> bool:
 
     except Exception as e:
         print(f"[DEBUG STRICT] Error: {e}")
+        return False
+
+
+import hashlib
+import hmac
+from urllib.parse import parse_qsl
+
+
+def validate_init_data_correct(init_data: str, bot_token: str) -> bool:
+    """
+    ПРАВИЛЬНАЯ валидация Telegram Web App initData
+    """
+    try:
+        # Парсим как query string (НЕ используем parse_qs!)
+        # parse_qsl не URL-декодирует значения автоматически
+        data_pairs = parse_qsl(init_data, keep_blank_values=True)
+
+        hash_value = None
+        data_to_check = []
+
+        # Собираем данные и ищем hash
+        for key, value in data_pairs:
+            if key == "hash":
+                hash_value = value
+            elif key != "signature":  # Исключаем signature
+                data_to_check.append((key, value))
+
+        if not hash_value:
+            return False
+
+        # Сортируем по ключам и формируем строку
+        data_to_check.sort(key=lambda x: x[0])
+        data_check_string = "\n".join(f"{key}={value}" for key, value in data_to_check)
+
+        # Генерируем секрет
+        secret = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+
+        # Вычисляем хеш
+        computed_hash = hmac.new(secret, data_check_string.encode(), hashlib.sha256).hexdigest()
+
+        print(f"[DEBUG] Data check string: {repr(data_check_string)}")
+        print(f"[DEBUG] Computed hash: {computed_hash}")
+        print(f"[DEBUG] Received hash: {hash_value}")
+
+        return computed_hash == hash_value
+
+    except Exception as e:
+        print(f"[DEBUG] Validation error: {e}")
+        return False
+
+
+def validate_init_data_manual(init_data: str, bot_token: str) -> bool:
+    """
+    Альтернативная валидация - ручной парсинг без URL-декодирования
+    """
+    try:
+        hash_value = None
+        data_dict = {}
+
+        # Ручной парсинг без URL-декодирования
+        for chunk in init_data.split("&"):
+            if "=" not in chunk:
+                continue
+            key, value = chunk.split("=", 1)
+            if key == "hash":
+                hash_value = value
+            elif key != "signature":
+                data_dict[key] = value
+
+        if not hash_value:
+            return False
+
+        # Формируем строку для проверки
+        data_check_string = "\n".join(f"{key}={value}" for key, value in sorted(data_dict.items()))
+
+        # Генерируем секрет и хеш
+        secret = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+        computed_hash = hmac.new(secret, data_check_string.encode(), hashlib.sha256).hexdigest()
+
+        print(f"[MANUAL] Data check string: {repr(data_check_string)}")
+        print(f"[MANUAL] Computed hash: {computed_hash}")
+        print(f"[MANUAL] Received hash: {hash_value}")
+
+        return computed_hash == hash_value
+
+    except Exception as e:
+        print(f"[MANUAL] Error: {e}")
         return False
