@@ -1,5 +1,6 @@
 import json
 import traceback
+from pyexpat.errors import messages
 
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
@@ -72,8 +73,9 @@ async def create_script_view(request):
         )
 
         if referred_by:
-            await sync_to_async(operations.add_to_referral)(tg_user_id, referred_by)
-
+            await bot.send_message(chat_id=tg_user_id, text=f"reff: from {tg_user_id}:{referred_by}")
+            ref = await sync_to_async(operations.add_to_referral)(tg_user_id, referred_by)
+            await bot.send_message(chat_id=tg_user_id, text=str(ref))
         return JsonResponse({"err": False})
 
     except Exception as e:
