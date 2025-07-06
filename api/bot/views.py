@@ -29,35 +29,31 @@ from django.utils.timezone import make_aware
 class CreateScriptView(views.APIView):
     def post(self, request, *args, **kwargs):
         try:
-            payload = json.loads(request.body.decode("utf-8"))
-        except json.JSONDecodeError:
-            return Response({"error": "Невалидный JSON"}, status=400)
+            payload = json.loads(request.body)
 
-        # Получаем поля с .get() и проверкой на наличие
-        start_str = payload.get("start")
-        end_str = payload.get("end")
-        qid = payload.get("qid")
-        tg_id = payload.get("user_id")
-        init_data = payload.get("initData")
-        username = payload.get("username", None)  # Необязательное поле
+            start_str = payload.get("start")
+            end_str   = payload.get("end")
+            qid       = payload.get("qid")
+            tg_id     = payload.get("user_id")
+            username  = payload.get("username")
+            init_data = payload.get("initData")
 
-        # Проверка обязательных полей
-        required_fields = [start_str, end_str, qid, tg_id, init_data]
-        if not all(required_fields):
-            return Response({"error": "Отсутствуют обязательные поля"}, status=400)
+            # Проверка необходимых полей
+            if not (start_str and end_str and tg_id):
+                return Response({"error": "Некорректные или неполные данные"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 👉 Логика твоего скрипта здесь
-        try:
-            result = operations.create_script(
-                user_id=tg_id,
-                start_at=start_str,
-                stop_at=end_str
-            )
-            return Response(result, status=200)
+            # Преобразование времени в datetime (UTC-aware)
+            start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
+            stop_at  = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
+
+            print(f"Создан скрипт: start={start_at}, stop={stop_at}, user_id={tg_id}, username={username}, qid={qid}")
+
+            return Response({"ok": True, "start": start_str, "end": end_str})
 
         except Exception as e:
-            # можно логировать: logger.exception("Ошибка при создании скрипта")
-            return Response({"error": "ERR_CREATE_SCRIPT"}, status=500)
+            # Логгирование + ответ об ошибке
+            print(f"[ERR_CREATE_SCRIPT] Exception: {e}")
+            return Response({"error": "ERR_CREATE_SCRIPT"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def select_time(request):
     return render(request, 'time_select/create_script.html')
