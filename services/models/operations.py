@@ -6,9 +6,15 @@ from . import catch_error
 
 
 @catch_error("ERR_GET_OR_CREATE_USER")
-def get_or_create_tg_user(user_id: int) -> dict:
-    user, _ = models.TgUsers.objects.get_or_create(user=user_id)
+def get_or_create_tg_user(user_id: int, ref_by: int = None) -> dict:
+    user, created = models.TgUsers.objects.get_or_create(user=user_id)
+
+    if created and ref_by:
+        user.ref_by_id = ref_by
+        user.save()
+
     return model_to_dict(user)
+
 
 
 @catch_error("ERR_CREATE_SCRIPT")
@@ -67,10 +73,28 @@ def get_my_scripts(user_id: int) -> list:
 
 
 @catch_error("ERR_GET_REFERRALS_COUNTS")
-def get_referrals_counts(user_id: int) -> list:
-    referrals = models.Referral.objects.filter(inviter_id=user_id, used=False)
-    return [model_to_dict(ref, fields=['id', 'used', 'created_at']) for ref in referrals]
+def get_referrals_counts(user_id: int) -> dict:
+    referrals = models.Referral.objects.filter(inviter_id=user_id)
+    all_referrals = [
+        model_to_dict(ref, fields=['id', 'used', 'created_at']) for ref in referrals
+    ]
+    used_referrals = [
+        model_to_dict(ref, fields=['id', 'used', 'created_at']) for ref in referrals if ref.used
+    ]
+    unused_referrals = [
+        model_to_dict(ref, fields=['id', 'used', 'created_at']) for ref in referrals if not ref.used
+    ]
+    return {
+        "all": all_referrals,
+        "used": used_referrals,
+        "unused": unused_referrals,
+    }
 
+
+@catch_error("ERR_GET_REFERRAL_INVITERS")
+def get_referrals_inviters(user_id: int):
+    users = models.TgUsers.objects.filter(referred_by=user_id)
+    return [model_to_dict(user, fields=['user', 'is_admin', 'username', 'referred_by']) for user in users]
 
 @catch_error("IS_ADMIN")
 def is_admin(user_id: int) -> bool:

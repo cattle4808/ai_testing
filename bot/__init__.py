@@ -13,7 +13,7 @@ class CommandMap:
     class User:
         BUY_SCRIPT = "Купить скрипт"
         MY_SCRIPTS = "Мои скрипты"
-        MY_DATA = "Мои данные"
+        MY_DATA = "Рефералы"
         INSTRUCTION = "Инструкции"
         SUPPORT = "Поддержка"
 
