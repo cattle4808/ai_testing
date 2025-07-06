@@ -1,7 +1,6 @@
 from aiogram import Router
 from aiogram import F, types
 from asgiref.sync import sync_to_async
-from setuptools.command.build_py import make_writable
 
 from bot.keyboards.user import inline as user_inline, reply as user_reply
 from bot.keyboards.admin import inline as admin_inline, reply as admin_reply

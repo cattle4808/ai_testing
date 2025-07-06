@@ -1,5 +1,7 @@
 from aiogram import Router, F, types
 
+from .. user import user_inline
+
 user_callback = Router()
 
 @user_callback.callback_query(F.data == "faq")
@@ -30,4 +32,23 @@ async def show_faq(callback: types.CallbackQuery):
         "Свяжитесь с админом: @AFT_Admin1"
     )
 
-    await callback.message.edit_text(text, parse_mode="HTML")
+    await callback.message.edit_text(
+        text,
+        parse_mode="HTML",
+        reply_markup=user_inline.back_support()
+    )
+
+
+@user_callback.callback_query(F.data == "back_to_support")
+async def support(message: types.Message):
+    await message.delete()
+    await message.answer(
+        "<b>🛠 Служба поддержки</b>\n\n"
+        "Мы ценим ваше доверие и всегда готовы помочь.\n"
+        "Если у вас возникли сложности — обращайтесь напрямую. "
+        "Мы ответим максимально быстро и с заботой о каждом пользователе.\n\n"
+        "🔐 <b>Ваша безопасность</b> — наш главный приоритет.\n"
+        "🎯 <b>Ваша уверенность</b> — наша ответственность.\n\n",
+        parse_mode="HTML",
+        reply_markup=user_inline.support()
+    )

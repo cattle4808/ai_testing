@@ -30,3 +30,12 @@ def support():
             ]
         ]
     )
+
+def back_support():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="🔙 Назад", callback_data=f"back_to_support")
+            ]
+        ]
+    )
