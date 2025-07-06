@@ -1,8 +1,10 @@
 import json
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
 from aiogram import types
+from idna.idnadata import scripts
 from rest_framework import views
 
 from services.crypto import SimpleCipher, TgCrypto
@@ -34,6 +36,12 @@ class CreateScriptView(views.APIView):
         if not check_init_data:
             return Http404()
 
+        script = operations.create_script(user_id=tg_id, start_at=start_str)
+
+        print(script)
+
+        bot.send_message(chat_id=tg_id, text=str(script))
 
 
-        # script = operations.create_script(tg_id, start_str, )
+def select_time(request):
+    return render(request, 'time_select/create_script.html')

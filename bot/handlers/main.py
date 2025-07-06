@@ -66,10 +66,10 @@ async def start_handler(message: types.Message, command: CommandStart):
         await message.answer("👋 Привет! Добро пожаловать!")
 
     user = await sync_to_async(operations.get_or_create_tg_user)(user_id, ref_by)
-    await message.answer(str(user))
-
     if await sync_to_async(operations.is_admin)(user_id):
         await message.answer("Вы вошли как администратор", reply_markup=admin_reply.main_menu())
         return
 
     await message.answer(f"Привет, {username}!", reply_markup=user_reply.main_menu())
+
+

@@ -1,5 +1,7 @@
 from datetime import datetime
 from django.forms.models import model_to_dict
+from datetime import timedelta
+from django.utils import timezone
 
 from api.v1 import models
 from . import catch_error
@@ -21,19 +23,24 @@ def get_or_create_tg_user(user_id: int, ref_by: int = None) -> dict:
 
 
 
+
 @catch_error("ERR_CREATE_SCRIPT")
-def create_script(owner: models.TgUsers, start_at: datetime, stop_at: datetime) -> dict:
-    def_get_refferals = models.Referral.objects.filter(inviter=owner, used=False)
-    if def_get_refferals.exists():
-        referral = def_get_refferals.first()
+def create_script(user_id: int, start_at: datetime, stop_at: datetime = None) -> dict:
+    if stop_at is None:
+        stop_at = timezone.now() + timedelta(hours=2)
+
+    def_get_referrals = models.Referral.objects.filter(invite__user=user_id, used=False)
+    if def_get_referrals.exists():
+        referral = def_get_referrals.first()
         referral.used = True
         referral.save()
 
     script = models.IdScript.objects.create(
-        owner=owner,
+        owner=models.TgUsers.objects.get(user=user_id),
         start_at=start_at,
         stop_at=stop_at,
     )
+
     data = model_to_dict(script, fields=[
         'id', 'script', 'key', 'script_type', 'fingerprint',
         'start_at', 'stop_at', 'is_active', 'used',
