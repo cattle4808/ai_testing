@@ -1,25 +1,13 @@
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart
 from asgiref.sync import sync_to_async
-
-from .. import bot
-from services.models import operations
-
-from ..keyboards.user import inline as user_inline, reply as user_reply
-from ..keyboards.admin import inline as admin_inline, reply as admin_reply
-
-
-main = Router()
-
-from aiogram import types
-from aiogram.filters import CommandStart
-from asgiref.sync import sync_to_async
 from services.crypto import SimpleCipher
 from .. import bot
 from services.models import operations
 from ..keyboards.user import reply as user_reply, inline as user_inline
 from ..keyboards.admin import reply as admin_reply, inline as admin_inline
 
+main = Router()
 
 @main.message(CommandStart(deep_link=True))
 async def start_handler(message: types.Message, command: CommandStart):

@@ -40,7 +40,7 @@ class CompactReferralCipher:
 
     def encrypt_id(self, user_id: int) -> str:
         id_bytes = str(user_id).encode()
-        signature = hmac.new(self.secret_key, id_bytes, hashlib.sha256).digest()[:4]  # 4 байта подписи
+        signature = hmac.new(self.secret_key, id_bytes, hashlib.sha256).digest()[:4]
         token = base64.urlsafe_b64encode(id_bytes + signature).decode().rstrip("=")
         return token
 
@@ -84,7 +84,3 @@ class TgCrypto:
         if abs(now - auth_date) > max_age_sec:
             return False
         return True
-
-
-cipher = CompactReferralCipher()
-print(cipher.decrypt_id("NjQzNTA3OTUxMiirDw8"))
