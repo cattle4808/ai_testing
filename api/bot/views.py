@@ -31,7 +31,7 @@ from django.utils.timezone import make_aware
 
 
 class CreateScriptView(views.APIView):
-    def post(self, request, *args, **kwargs):
+    async def post(self, request, *args, **kwargs):
         try:
             payload = json.loads(request.body)
             start_str = payload.get("start")
@@ -55,13 +55,13 @@ class CreateScriptView(views.APIView):
 
             script = operations.create_script(tg_user_id, start_at)
 
-            asyncio.create_task(bot.send_message(chat_id=tg_user_id, text=f"Script: {script.get('script')}\n"
+            await bot.send_message(chat_id=tg_user_id, text=f"Script: {script.get('script')}\n"
                                                       f"Key: {script.get('key')}\n"
                                                       f"Started at: {script.get('start_at')}\n"
                                                       f"Stop at: {script.get('stop_at')}\n"
                                                       f"Is active/buy: {script.get('is_active')}\n"
                                                       f"Used: {script.get('max_usage')}/{script.get('used')}\n"
-                                                      f"Owner id: {script.get('max_usage')}"))
+                                                      f"Owner id: {script.get('max_usage')}")
             if referred_by:
                 add_to_referral = operations.add_to_referral(user.get('id'), user.get('referred_by'))
 
