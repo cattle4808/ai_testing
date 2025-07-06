@@ -10,7 +10,7 @@ def get_or_create_tg_user(user_id: int, ref_by: int = None) -> dict:
     user, created = models.TgUsers.objects.get_or_create(user=user_id)
 
     if created and ref_by:
-        user.ref_by_id = ref_by
+        user.referred_by = ref_by
         user.save()
 
     return model_to_dict(user)

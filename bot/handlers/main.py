@@ -33,15 +33,21 @@ async def start_handler(message: types.Message, command: CommandStart):
             decrypted_id = int(SimpleCipher().decrypt(referral_code))
             if decrypted_id != user_id:
                 ref_by = decrypted_id
-        except Exception:
-            return
+                await message.answer(f"Вы пришли по реферальной ссылке пользователя {ref_by}")
+            else:
+                await message.answer("Вы не можете использовать свою собственную реферальную ссылку.")
+        except Exception as e:
+            await message.answer("❌ Неверный или поврежденный реферальный код.")
+            print(f"[REFERRAL ERROR] Невозможно расшифровать код '{referral_code}': {e}")
 
     user = await sync_to_async(operations.get_or_create_tg_user)(user_id, ref_by=ref_by)
 
     if await sync_to_async(operations.is_admin)(user_id):
         await message.answer("Вы администратор", reply_markup=admin_reply.main_menu())
+        return
 
     await message.answer(f"Привет, {username}!", reply_markup=user_reply.main_menu())
+
 
 
 
