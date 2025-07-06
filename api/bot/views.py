@@ -15,7 +15,7 @@ from bot.runner import bot, dp
 @csrf_exempt
 async def webhook(request):
     if request.method != "POST":
-        return JsonResponse({"error": "only POST allowed"}, status=405)
+        raise Http404()
     body = request.body.decode()
     update = types.Update.model_validate_json(body)
     await dp.feed_webhook_update(bot, update)
