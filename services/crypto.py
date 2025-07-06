@@ -67,6 +67,13 @@ import time
 from urllib.parse import parse_qsl, unquote
 from django.conf import settings
 
+import hashlib
+import hmac
+import json
+import time
+from urllib.parse import parse_qsl, unquote
+from django.conf import settings
+
 
 class TgCrypto:
     def __init__(self, bot_token: str = None):
@@ -173,10 +180,24 @@ def validate_telegram_webapp_data(init_data: str, bot_token: str) -> bool:
             if key == "hash":
                 hash_string = value
                 continue
+            # Исключаем signature из валидации
+            if key == "signature":
+                continue
             init_data_dict[key] = unquote(value)
 
         if not hash_string:
             return False
+
+        # Специальная обработка для photo_url с экранированными слешами
+        if "user" in init_data_dict:
+            try:
+                user_data = json.loads(init_data_dict["user"])
+                # ВАЖНО: Сохраняем экранированные слеши в photo_url
+                if "photo_url" in user_data and user_data["photo_url"]:
+                    user_data["photo_url"] = user_data["photo_url"].replace("/", "\\/")
+                init_data_dict["user"] = json.dumps(user_data, separators=(",", ":"), sort_keys=True)
+            except json.JSONDecodeError:
+                pass
 
         # Строим строку для проверки
         data_check_string = "\n".join([
@@ -198,4 +219,41 @@ def validate_telegram_webapp_data(init_data: str, bot_token: str) -> bool:
 
     except Exception as e:
         print(f"[DEBUG] Validation error: {e}")
+        return False
+
+
+# Еще одна альтернативная функция - точная копия рабочего примера
+def validate_init_data_strict(init_data: str, bot_token: str) -> bool:
+    """
+    Строгая валидация - точная копия рабочего примера из GitHub
+    """
+    try:
+        from urllib.parse import parse_qs
+
+        # Парсим как URL параметры
+        init_data_parsed = parse_qs(init_data)
+        hash_value = init_data_parsed.get('hash', [None])[0]
+
+        if not hash_value:
+            return False
+
+        # Собираем данные для проверки (исключаем hash и signature)
+        data_to_check = []
+        sorted_items = sorted((key, val[0]) for key, val in init_data_parsed.items()
+                              if key not in ['hash', 'signature'])
+        data_to_check = [f"{key}={value}" for key, value in sorted_items]
+
+        # HMAC вычисление
+        secret = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
+        computed_hash = hmac.new(secret, "\n".join(data_to_check).encode(), hashlib.sha256).hexdigest()
+
+        print(f"[DEBUG STRICT] Data to check: {data_to_check}")
+        print(f"[DEBUG STRICT] Joined: {repr('\\n'.join(data_to_check))}")
+        print(f"[DEBUG STRICT] Computed: {computed_hash}")
+        print(f"[DEBUG STRICT] Received: {hash_value}")
+
+        return computed_hash == hash_value
+
+    except Exception as e:
+        print(f"[DEBUG STRICT] Error: {e}")
         return False

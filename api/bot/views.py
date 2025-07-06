@@ -1,4 +1,6 @@
 import json
+
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -9,7 +11,7 @@ from rest_framework import views, status
 from rest_framework.response import Response
 
 
-from services.crypto import SimpleCipher, TgCrypto
+from services.crypto import SimpleCipher, TgCrypto, validate_init_data_strict
 from services.models import operations
 from bot.runner import bot, dp
 
@@ -45,7 +47,7 @@ class CreateScriptView(views.APIView):
             start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
             stop_at  = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
 
-            chech_init_data = TgCrypto().verify_init_data(init_data)
+            chech_init_data = validate_init_data_strict(init_data, settings.BOT_TOKEN)
 
             print("chech_init_data:", chech_init_data)
 
