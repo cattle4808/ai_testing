@@ -35,6 +35,33 @@ class SimpleCipher:
         token = urllib.parse.unquote(token)
         return self.cipher.decrypt(token.encode()).decode()
 
+class CompactReferralCipher:
+    def __init__(self, secret_key: str = None):
+        if secret_key is None:
+            if _DEFAULT_SECRET_KEY is None:
+                raise ValueError("SECRET_KEY is required.")
+            secret_key = _DEFAULT_SECRET_KEY
+        self.secret_key = secret_key.encode()
+
+    def encrypt_id(self, user_id: int) -> str:
+        id_bytes = str(user_id).encode()
+        signature = hmac.new(self.secret_key, id_bytes, hashlib.sha256).digest()[:4]  # 4 байта подписи
+        token = base64.urlsafe_b64encode(id_bytes + signature).decode().rstrip("=")
+        return token
+
+    def decrypt_id(self, token: str) -> int | None:
+        try:
+            padded = token + "=" * (-len(token) % 4)
+            decoded = base64.urlsafe_b64decode(padded)
+            user_id_bytes, signature = decoded[:-4], decoded[-4:]
+            expected = hmac.new(self.secret_key, user_id_bytes, hashlib.sha256).digest()[:4]
+            if hmac.compare_digest(signature, expected):
+                return int(user_id_bytes.decode())
+        except Exception:
+            pass
+        return None
+
+
 class TgCrypto:
     def __init__(self, bot_token: str = None):
         if bot_token is None:
