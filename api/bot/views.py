@@ -23,18 +23,18 @@ async def webhook(request):
 
 class CreateScriptView(views.APIView):
     def post(self, request, *args, **kwargs):
-        try:
-            payload = json.loads(request.body)
-            start_str = payload["start"]
-            tg_id = payload["user_id"]
-            username = payload.get("username", None)
-            init_data = payload["initData"]
-        except (ValueError, KeyError):
-            raise Http404()
+        # try:
+        payload = json.loads(request.body)
+        start_str = payload["start"]
+        tg_id = payload["user_id"]
+        username = payload.get("username", None)
+        init_data = payload["initData"]
+        # except (ValueError, KeyError):
+        #     raise Http404()
 
         check_init_data = TgCrypto().verify_init_data(init_data)
-        if not check_init_data:
-            raise Http404()
+        # if not check_init_data:
+        #     raise Http404()
 
         script = operations.create_script(user_id=tg_id, start_at=start_str)
 
