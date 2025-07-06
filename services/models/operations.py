@@ -19,6 +19,11 @@ def get_or_create_tg_user(user_id: int, ref_by: int = None) -> dict:
         except models.TgUsers.DoesNotExist:
             print(f"[⚠️] Реферал с user_id={ref_by} не найден в базе.")
 
+    if user.referred_by:
+        user["referred_by"] = model_to_dict(user.referred_by)
+    else:
+        user["referred_by"] = None
+
     return model_to_dict(user)
 
 
