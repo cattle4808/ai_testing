@@ -4,16 +4,18 @@ import urllib.parse
 import hmac
 from cryptography.fernet import Fernet
 import time
-
 from django.conf import settings
 
+
+
+SECRET_KEY = settings.SECRET_KEY
 
 class SimpleCipher:
     def __init__(self, secret_key: str = None):
         if secret_key is None:
-            if settings.SECRET_KEY is None:
+            if SECRET_KEY is None:
                 raise ValueError("SECRET_KEY is required. Either pass it explicitly or configure Django settings.")
-            secret_key = settings.SECRET_KEY
+            secret_key = SECRET_KEY
 
         key = hashlib.sha256(secret_key.encode()).digest()
         self.key = base64.urlsafe_b64encode(key)
@@ -33,9 +35,9 @@ class SimpleCipher:
 class CompactReferralCipher:
     def __init__(self, secret_key: str = None):
         if secret_key is None:
-            if settings.SECRET_KEY is None:
+            if SECRET_KEY is None:
                 raise ValueError("SECRET_KEY is required.")
-            secret_key = settings.SECRET_KEY
+            secret_key = SECRET_KEY
         self.secret_key = secret_key.encode()
 
     def encrypt_id(self, user_id: int) -> str:
@@ -84,3 +86,20 @@ class TgCrypto:
         if abs(now - auth_date) > max_age_sec:
             return False
         return True
+
+
+
+# user_id = 6435079512
+#
+#
+# cipher = CompactReferralCipher()
+#
+# code = cipher.encrypt_id(user_id)
+# print("🔐 Encrypted code:", code)
+#
+# decoded = cipher.decrypt_id(code)
+# print("🔓 Decrypted user_id:", decoded)
+#
+# from django.conf import settings
+# print(settings.SECRET_KEY)
+
