@@ -20,8 +20,6 @@ async def buy_script(message: types.Message):
 @user.message(F.text == CommandMap.User.MY_DATA)
 async def my_referrals(message: types.Message):
     await message.delete()
-    await message.answer("Рефералы")
-
     user_id = message.from_user.id
 
     referral_link = await sync_to_async(refferal.generate_referral_link)(user_id)
@@ -59,7 +57,17 @@ async def instruction(message: types.Message):
 @user.message(F.text == CommandMap.User.SUPPORT)
 async def support(message: types.Message):
     await message.delete()
-    await message.answer("Поддержка")
+    await message.answer(
+        "<b>🛠 Служба поддержки</b>\n\n"
+        "Мы ценим ваше доверие и всегда готовы помочь.\n"
+        "Если у вас возникли сложности — обращайтесь напрямую. "
+        "Мы ответим максимально быстро и с заботой о каждом пользователе.\n\n"
+        "🔐 <b>Ваша безопасность</b> — наш главный приоритет.\n"
+        "🎯 <b>Ваша уверенность</b> — наша ответственность.\n\n",
+        parse_mode="HTML",
+        reply_markup=user_inline.support()
+    )
+
 
 @user.message(F.text == CommandMap.User.MY_SCRIPTS)
 async def my_shops(message: types.Message):
