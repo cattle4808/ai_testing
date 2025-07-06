@@ -31,7 +31,7 @@ async def my_referrals(message: types.Message):
 
     await message.answer(f"Юзеры с рефералки: {len(inviter_users)}\n\n"
                          f"Покупок с вашей рефералки: {len(refferal_buys['all'])}\n\n"
-                         f"Подробнее покупки: {refferal_buys['all']}"
+                         f"Подробнее покупки: {refferal_buys}"
                          )
 
 @user.message(F.text == CommandMap.User.INSTRUCTION)
