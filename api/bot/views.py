@@ -11,8 +11,7 @@ from rest_framework import views, status
 from rest_framework.response import Response
 
 
-from services.crypto import SimpleCipher, TgCrypto, validate_init_data_strict, validate_init_data_manual, \
-    validate_init_data_correct, validate_init_data_test_variants
+from services.crypto import TelegramWebAppValidator
 from services.models import operations
 from bot.runner import bot, dp
 
@@ -50,9 +49,10 @@ class CreateScriptView(views.APIView):
 
             # Тестируем разные варианты обработки user поля
             print("\n=== Тестируем варианты обработки user ===")
-            chech_init_data = validate_init_data_test_variants(init_data, settings.BOT_TOKEN)
+            print("settings.BOT_TOKEN =", settings.BOT_TOKEN)
+            check_init_data = TelegramWebAppValidator.is_safe(settings.BOT_TOKEN, init_data)
 
-            print(f"chech_init_data: {chech_init_data}")
+            print(f"chech_init_data: {check_init_data}")
 
             print(f"Создан скрипт: start={start_at}, stop={stop_at}, user_id={tg_id}, username={username}, qid={qid}")
 
