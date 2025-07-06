@@ -60,15 +60,14 @@ class CompactReferralCipher:
         return None
 
 
-
-
 class TgCrypto:
     def __init__(self, bot_token: str = None):
         if bot_token is None:
             if not hasattr(settings, "BOT_TOKEN") or settings.BOT_TOKEN is None:
                 raise ValueError("BOT_TOKEN is required. Either pass it explicitly or configure Django settings.")
             bot_token = settings.BOT_TOKEN
-        self.SECRET_KEY = hashlib.sha256(bot_token.encode()).digest()
+
+        self.SECRET_KEY = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
 
     def _parse_init_data(self, init_data: str) -> tuple[dict, str]:
         data = dict(urllib.parse.parse_qsl(init_data, keep_blank_values=True))
