@@ -28,30 +28,36 @@ from django.utils.timezone import make_aware
 
 class CreateScriptView(views.APIView):
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.body)
-
-        date_str = payload["date"]
-        time_str = payload["time"]
-        tg_id = payload["user_id"]
-        init_data = payload["initData"]
-        username = payload.get("username")
-
-        check_init_data = TgCrypto().verify_init_data(init_data)
-        if not check_init_data:
-            raise Http404()
-
         try:
-            start_at_naive = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
-            start_at = make_aware(start_at_naive)
-        except ValueError:
-            return Response({"error": "Неверный формат даты или времени"}, status=400)
+            payload = json.loads(request.body.decode("utf-8"))
+        except json.JSONDecodeError:
+            return Response({"error": "Невалидный JSON"}, status=400)
 
-        script = operations.create_script(user_id=tg_id, start_at=start_at)
+        # Получаем поля с .get() и проверкой на наличие
+        start_str = payload.get("start")
+        end_str = payload.get("end")
+        qid = payload.get("qid")
+        tg_id = payload.get("user_id")
+        init_data = payload.get("initData")
+        username = payload.get("username", None)  # Необязательное поле
 
-        print(script)
-        bot.send_message(chat_id=tg_id, text=str(script))
+        # Проверка обязательных полей
+        required_fields = [start_str, end_str, qid, tg_id, init_data]
+        if not all(required_fields):
+            return Response({"error": "Отсутствуют обязательные поля"}, status=400)
 
-        return Response(script)
+        # 👉 Логика твоего скрипта здесь
+        try:
+            result = operations.create_script(
+                user_id=tg_id,
+                start_at=start_str,
+                stop_at=end_str
+            )
+            return Response(result, status=200)
+
+        except Exception as e:
+            # можно логировать: logger.exception("Ошибка при создании скрипта")
+            return Response({"error": "ERR_CREATE_SCRIPT"}, status=500)
 
 def select_time(request):
     return render(request, 'time_select/create_script.html')
