@@ -1,5 +1,6 @@
 import hashlib
 import base64
+import json
 import urllib.parse
 import hmac
 from cryptography.fernet import Fernet
@@ -73,6 +74,14 @@ class TgCrypto:
         data = dict(urllib.parse.parse_qsl(init_data, keep_blank_values=True))
         hash_check = data.pop("hash", None)
         data.pop("signature", None)
+
+        if "user" in data:
+            try:
+                user_dict = json.loads(data["user"])
+                data["user"] = json.dumps(user_dict, separators=(",", ":"), sort_keys=True)
+            except Exception as e:
+                print(f"[DEBUG] Failed to normalize user JSON: {e}")
+
         return data, hash_check
 
     def _build_check_string(self, data: dict) -> str:
