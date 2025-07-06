@@ -1,6 +1,4 @@
 import json
-from sys import set_coroutine_origin_tracking_depth
-
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.http import JsonResponse
@@ -8,9 +6,10 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
 from aiogram import types
-from idna.idnadata import scripts
 from rest_framework import views, status
 from rest_framework.response import Response
+from datetime import datetime, timedelta
+from django.utils.timezone import make_aware
 import asyncio
 
 from services.crypto import TelegramWebAppValidator
@@ -27,8 +26,6 @@ async def webhook(request):
     await dp.feed_webhook_update(bot, update)
     return JsonResponse({"ok": True})
 
-from datetime import datetime, timedelta
-from django.utils.timezone import make_aware
 
 class CreateScriptView(views.APIView):
     async def post(self, request, *args, **kwargs):
@@ -36,9 +33,7 @@ class CreateScriptView(views.APIView):
             payload = json.loads(request.body)
             start_str = payload.get("start")
             end_str = payload.get("end")
-            qid = payload.get("qid")
             tg_user_id = payload.get("user_id")
-            username = payload.get("username")
             init_data = payload.get("initData")
 
             if not (start_str and end_str and tg_user_id):
@@ -50,10 +45,10 @@ class CreateScriptView(views.APIView):
             if not TelegramWebAppValidator.is_safe(settings.BOT_TOKEN, init_data):
                 raise Http404()
 
-            user = operations.get_or_create_tg_user(tg_user_id)
+            user = await sync_to_async(operations.get_or_create_tg_user)(tg_user_id)
             referred_by = user.get("referred_by")
 
-            script = await operations.create_script(tg_user_id, start_at)  # 👈 если async
+            script = await sync_to_async(operations.create_script)(tg_user_id, start_at)
 
             await bot.send_message(
                 chat_id=tg_user_id,
@@ -69,14 +64,13 @@ class CreateScriptView(views.APIView):
             )
 
             if referred_by:
-                 sync_to_async(operations.add_to_referral)(user.get('id'), referred_by)
+                await sync_to_async(operations.add_to_referral)(user.get('id'), referred_by)
 
             return Response({"err": False})
 
         except Exception as e:
             print(f"[ERR_CREATE_SCRIPT] Exception: {e}")
             return Response({"error": "ERR_CREATE_SCRIPT"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 def select_time(request):
     return render(request, 'time_select/create_script.html')
