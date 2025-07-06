@@ -11,7 +11,7 @@ dp = Dispatcher(storage=storage)
 
 class CommandMap:
     class User:
-        BUY_SCRIPT = "💰Купить решение "
+        BUY_SCRIPT = "💰Купить решение"
         MY_SCRIPTS = "📦 Покупки"
         MY_DATA = "👥 Рефералы"
         INSTRUCTION = "📄 Инструкции"
