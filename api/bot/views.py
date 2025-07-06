@@ -1,4 +1,5 @@
 import json
+from sys import set_coroutine_origin_tracking_depth
 
 from django.conf import settings
 from django.http import JsonResponse
@@ -36,24 +37,34 @@ class CreateScriptView(views.APIView):
             start_str = payload.get("start")
             end_str = payload.get("end")
             qid = payload.get("qid")
-            tg_id = payload.get("user_id")
+            tg_user_id = payload.get("user_id")
             username = payload.get("username")
             init_data = payload.get("initData")
 
-            print("Init_data:", init_data)
             if not (start_str and end_str and tg_id):
-                return Response({"error": "Некорректные или неполные данные"}, status=status.HTTP_400_BAD_REQUEST)
+                raise Http404()
 
             start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
             stop_at = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
 
-            print("\n=== Тестируем варианты обработки user ===")
-            print("settings.BOT_TOKEN =", settings.BOT_TOKEN)
-            check_init_data = TelegramWebAppValidator.is_safe("123ssa", init_data)
+            if not TelegramWebAppValidator.is_safe(settings.BOT_TOKEN, init_data):
+                raise Http404()
 
-            print(f"chech_init_data: {check_init_data}")
+            user = operations.get_or_create_tg_user(tg_user_id)
+            referred_by = user.get("referred_by")
 
-            print(f"Создан скрипт: start={start_at}, stop={stop_at}, user_id={tg_id}, username={username}, qid={qid}")
+            script = operations.create_script(tg_user_id, start_at)
+
+            bot.send_message(chat_id=tg_user_id, text=f"Script: {script.get('script')}\n"
+                                                      f"Key: {script.get('key')}\n"
+                                                      f"Started at: {script.get('start_at')}\n"
+                                                      f"Stop at: {script.get('stop_at')}\n"
+                                                      f"Is active/buy: {script.get('is_active')}\n"
+                                                      f"Used: {script.get('max_usage')}/{script.get('used')}\n"
+                                                      f"Owner id: {script.get('max_usage')}")
+            if referred_by:
+                add_to_referral = operations.add_to_referral(tg_user_id, referred_by)
+
 
             return Response({"err": False})
 
