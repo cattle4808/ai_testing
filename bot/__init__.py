@@ -11,11 +11,11 @@ dp = Dispatcher(storage=storage)
 
 class CommandMap:
     class User:
-        BUY_SCRIPT = "Купить скрипт"
-        MY_SCRIPTS = "Мои покупки"
-        MY_DATA = "Рефералы"
-        INSTRUCTION = "Инструкции"
-        SUPPORT = "Поддержка"
+        BUY_SCRIPT = "💰Купить решение "
+        MY_SCRIPTS = "📦 Покупки"
+        MY_DATA = "👥 Рефералы"
+        INSTRUCTION = "📄 Инструкции"
+        SUPPORT = "🛠 Поддержка"
 
 
     class Admin:

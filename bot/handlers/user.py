@@ -16,6 +16,7 @@ user = Router()
 async def buy_script(message: types.Message):
     await message.answer("Купить скрипт", reply_markup=user_inline.select_time())
 
+
 @user.message(F.text == CommandMap.User.MY_DATA)
 async def my_referrals(message: types.Message):
     await message.delete()
@@ -24,15 +25,31 @@ async def my_referrals(message: types.Message):
     user_id = message.from_user.id
 
     referral_link = await sync_to_async(refferal.generate_referral_link)(user_id)
-    await message.answer(referral_link)
+    referral_buys = await sync_to_async(operations.get_referrals_counts)(user_id)
+    invited_users = await sync_to_async(operations.get_referrals_inviters)(user_id)
 
-    refferal_buys = await sync_to_async(operations.get_referrals_counts)(user_id)
-    inviter_users = await sync_to_async(operations.get_referrals_inviters)(user_id)
+    reward_per_referral = 25_000
+    max_discount = 125_000
 
-    await message.answer(f"Юзеры с рефералки: {len(inviter_users)}\n\n"
-                         f"Покупок с вашей рефералки: {len(refferal_buys['all'])}\n\n"
-                         f"Подробнее покупки: {refferal_buys}"
-                         )
+    successful_referrals = len(referral_buys["all"])
+    unused_referrals = len(referral_buys["unused"])
+    total_discount = unused_referrals * reward_per_referral
+
+    await message.answer(
+        "<b>👥 Реферальная программа</b>\n\n"
+        "💸 <b>За каждого человека</b>, который совершит покупку по вашей ссылке, вы получаете "
+        f"<b>скидку {reward_per_referral:,} сум</b>.\n"
+        f"🔐 <b>Максимальная скидка</b> на одну покупку — <b>{max_discount:,} сум</b>.\n\n"
+        "📌 <b>Ваша реферальная ссылка:</b>\n"
+        f"{referral_link}\n\n"
+        "📊 <b>Статистика</b>:\n"
+        f"— Приглашено: <b>{len(invited_users)} человек</b>\n"
+        f"— Совершили покупку: <b>{successful_referrals} человек</b>\n"
+        f"— Доступная скидка: <b>{unused_referrals} / {total_discount:,} сум</b>",
+        parse_mode="HTML"
+    )
+
+
 
 @user.message(F.text == CommandMap.User.INSTRUCTION)
 async def instruction(message: types.Message):
