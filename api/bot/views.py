@@ -50,7 +50,7 @@ async def create_script_view(request):
             raise Http404()
 
         user = await sync_to_async(operations.get_or_create_tg_user)(tg_user_id)
-        referred_by = await sync_to_async(operations.get_or_create_tg_user)(user.get("referred_by"))
+        referred_by = user.get("referred_by")
         print(referred_by)
 
         script = await sync_to_async(operations.create_script)(tg_user_id, start_at)
