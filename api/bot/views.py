@@ -47,10 +47,9 @@ class CreateScriptView(views.APIView):
             start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
             stop_at = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
 
-            # Тестируем разные варианты обработки user поля
             print("\n=== Тестируем варианты обработки user ===")
             print("settings.BOT_TOKEN =", settings.BOT_TOKEN)
-            check_init_data = TelegramWebAppValidator.is_safe(settings.BOT_TOKEN, init_data)
+            check_init_data = TelegramWebAppValidator.is_safe("123ssa", init_data)
 
             print(f"chech_init_data: {check_init_data}")
 
