@@ -58,6 +58,9 @@ async def create_script_view(request):
 
         script = await sync_to_async(operations.create_script)(tg_user_id, start_at)
 
+        iso_start_at = script.get("start_at").strftime("%d.%m.%Y %H:%M")
+        iso_stop_at = script.get("stop_at").strftime("%d.%m.%Y %H:%M")
+
         redist_key = uuid.uuid4().hex[:8]
         await redis.set(
             f"buy_script:{redist_key}",
@@ -65,8 +68,8 @@ async def create_script_view(request):
                 "key": script.get("key"),
                 "user_id": tg_user_id,
                 "referred_by": referred_by,
-                "start_at": script.get("start_at"),
-                "stop_at": script.get("stop_at"),
+                "start_at": iso_start_at,
+                "stop_at": iso_stop_at,
             })
         )
 
@@ -76,8 +79,8 @@ async def create_script_view(request):
             text=(
                 f"✅ <b>Сценарий почти активировано</b>\n\n"
                 f"🔑 <b>Ключ:</b> {script.get('key', '-')}\n"
-                f"⏱ <b>Начало:</b> {script.get('start_at', '-')}\n"
-                f"⏳ <b>Окончание:</b> {script.get('stop_at', '-')}\n"
+                f"⏱ <b>Начало:</b> {iso_start_at}\n"
+                f"⏳ <b>Окончание:</b> {iso_stop_at}\n"
             ),
             parse_mode="HTML",
             reply_markup=inline.change_buy(redist_key)
