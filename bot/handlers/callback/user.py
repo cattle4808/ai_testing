@@ -88,5 +88,13 @@ async def buy(callback: types.CallbackQuery):
         "Владелец: <b>UMEDJANOV.A</b>\n\n"
         "📸 После оплаты просто пришли сюда фото или скриншот чека.",
         parse_mode="HTML",
-        reply_markup=user_inline.cancel_keyboard()
+        reply_markup=user_inline.cancel_keyboard(redis_key)
     )
+
+
+@user_callback.callback_query(F.data.regexp(r"^cancel_payment:(.+)$"))
+async def cancel_payment(callback: types.CallbackQuery):
+    redis_key = callback.data.split("cancel_payment:")[1]
+    await redis.delete(f"buy_script:{redis_key}")
+    await callback.message.delete()
+    await callback.message.answer("Оплата отменена")

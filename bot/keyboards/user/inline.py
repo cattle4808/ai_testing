@@ -1,11 +1,11 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
-def cancel_keyboard():
+def cancel_keyboard(redis_key):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text='❌Отменить', callback_data='cancel')
+                InlineKeyboardButton(text='❌Отменить', callback_data=f'cancel_payment:{redis_key}')
             ]
         ]
     )
