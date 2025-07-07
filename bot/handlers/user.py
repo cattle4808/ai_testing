@@ -3,9 +3,9 @@ from aiogram import F, types
 from asgiref.sync import sync_to_async
 from django.conf import settings
 
-from bot.keyboards.user import inline as user_inline, reply as user_reply
-from bot.keyboards.admin import inline as admin_inline, reply as admin_reply
-from bot import CommandMap
+from ..keyboards.user import inline as user_inline, reply as user_reply
+from ..keyboards.admin import inline as admin_inline, reply as admin_reply
+from .. import CommandMap
 
 from services.models import operations
 from services.models import refferal

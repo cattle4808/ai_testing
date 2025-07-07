@@ -58,13 +58,13 @@ def send_or_receive_payment(key) -> InlineKeyboardMarkup:
         ]
     )
 
-def change_buy(key):
+def change_buy(redis_key):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="Оплатить",
-                    callback_data=f"buy:{key}"
+                    callback_data=f"buy_script:{redis_key}"
                 )
             ]
         ]

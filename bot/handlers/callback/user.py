@@ -1,9 +1,9 @@
-from pyexpat.errors import messages
-
 from aiogram import Router, F, types
 from asgiref.sync import sync_to_async
 
 from .. user import user_inline
+from ... import redis
+
 from services.models import operations
 
 
@@ -61,7 +61,12 @@ async def support(callback: types.CallbackQuery):
 
 @user_callback.callback_query(F.data.regexp(r"^buy:(.+)$"))
 async def buy(callback: types.CallbackQuery):
-    session_key = callback.data.split("buy:")[1]
+    await callback.answer()
+
+    redis_key = callback.data.split("buy:")[1]
+    redis_key = callback.data.split("buy_script:")[1]
+    data_json = await redis.get(f"buy_script:{redis_key}")
+
     referrals = await sync_to_async(operations.get_referrals_counts)(callback.from_user.id)
 
     await callback.message.answer(
@@ -70,7 +75,7 @@ async def buy(callback: types.CallbackQuery):
 
     await callback.message.answer(
             "💳 <b>Оплата 250 000 сум</b>\n\n"
-            f"🆔:<code>{session_key}</code>\n\n"
+            f"🆔:<code>{data_json.get('key')}</code>\n\n"
             "💰 <b>Карта для перевода:</b>\n<code>5614 6805 1994 2698</code>\n"
             f"Владелец: <b>UMEDJANOV.A</b>\n\n"
             "📸 После оплаты просто пришли сюда фото или скриншот чека.",

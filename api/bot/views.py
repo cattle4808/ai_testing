@@ -1,5 +1,7 @@
 import json
 import traceback
+import uuid
+
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.http import JsonResponse
@@ -18,6 +20,7 @@ from api.v1.serializers import parse_tashkent_datetime
 from services.crypto import TelegramWebAppValidator
 from services.models import operations
 from bot.runner import bot, dp
+from bot import redis
 
 
 @csrf_exempt
@@ -51,9 +54,20 @@ async def create_script_view(request):
             raise Http404()
 
         user = await sync_to_async(operations.get_or_create_tg_user)(tg_user_id)
-        referred_by = user.get("referred_by")
+        referred_by = user.get("referred_by", None)
 
         script = await sync_to_async(operations.create_script)(tg_user_id, start_at)
+
+        redist_key = uuid.uuid4().hex[:8]
+        await redis.set(
+            f"buy_script:{redist_key}",
+            json.dumps({
+                "key": script.get("key"),
+                "user_id": tg_user_id,
+                "referred_by": referred_by
+            })
+        )
+
 
         await bot.send_message(
             chat_id=tg_user_id,
@@ -64,13 +78,9 @@ async def create_script_view(request):
                 f"⏳ <b>Окончание:</b> {script.get('stop_at', '-')}\n"
             ),
             parse_mode="HTML",
-            reply_markup=inline.change_buy(script.get('key', '-'))
+            reply_markup=inline.change_buy(redist_key)
         )
 
-        if referred_by:
-            await bot.send_message(chat_id=tg_user_id, text=f"reff: from {tg_user_id}:{referred_by}")
-            ref = await sync_to_async(operations.add_to_referral)(referred_by, tg_user_id)
-            await bot.send_message(chat_id=tg_user_id, text=str(ref))
         return JsonResponse({"err": False})
 
     except Exception as e:
