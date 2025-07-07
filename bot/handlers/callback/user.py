@@ -1,6 +1,7 @@
 from pyexpat.errors import messages
 
 from aiogram import Router, F, types
+from asgiref.sync import sync_to_async
 
 from .. user import user_inline
 from services.models import operations
@@ -61,7 +62,7 @@ async def support(callback: types.CallbackQuery):
 @user_callback.callback_query(F.data.regexp(r"^buy:(.+)$"))
 async def buy(callback: types.CallbackQuery):
     session_key = callback.data.split("buy:")[1]
-    referrals = operations.get_referrals_counts(callback.from_user.id)
+    referrals = sync_to_async(operations.get_referrals_counts)(callback.from_user.id)
 
     await callback.message.answer(
         str(referrals)
