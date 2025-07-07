@@ -75,9 +75,9 @@ async def buy(callback: types.CallbackQuery):
 
     referrals = await sync_to_async(operations.get_referrals_counts)(callback.from_user.id)
 
-    # await callback.message.answer(
-    #     str(referrals)
-    # )
+    await callback.message.answer(
+        f"Доступные реферралки: {len(referrals.get('unused'))}\n"
+    )
 
     await callback.message.answer(
         "💳 <b>Оплата 250 000 сум</b>\n\n"

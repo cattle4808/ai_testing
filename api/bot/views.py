@@ -73,7 +73,6 @@ async def create_script_view(request):
             })
         )
 
-
         await bot.send_message(
             chat_id=tg_user_id,
             text=(
