@@ -63,11 +63,11 @@ async def buy(callback: types.CallbackQuery):
     session_key = callback.data.split("pay:")[1]
     referrals = operations.get_referrals_counts(callback.from_user.id)
 
-    await callback.answer(
+    await callback.message.answer(
         str(referrals)
     )
 
-    await callback.answer(
+    await callback.message.answer(
             "💳 <b>Оплата 250 000 сум</b>\n\n"
             f"🆔:<code>{session_key}</code>\n\n"
             "💰 <b>Карта для перевода:</b>\n<code>5614 6805 1994 2698</code>\n"
