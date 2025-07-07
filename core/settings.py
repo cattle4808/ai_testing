@@ -178,3 +178,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 BOT_USERNAME = os.getenv('BOT_USERNAME')
+
+
+REWERD_PER_REFFERAL=int(os.getenv('REWERD_PER_REFFERAL', 25_000))
+MAX_DISCOUNT=int(os.getenv('MAX_DISCOUNT', 125_000))

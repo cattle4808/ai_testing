@@ -1,7 +1,5 @@
 import json
 import traceback
-from pyexpat.errors import messages
-
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.http import JsonResponse
@@ -14,6 +12,7 @@ from rest_framework.response import Response
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 import asyncio
+from bot.keyboards.user import inline
 
 from api.v1.serializers import parse_tashkent_datetime
 from services.crypto import TelegramWebAppValidator
@@ -54,22 +53,18 @@ async def create_script_view(request):
         user = await sync_to_async(operations.get_or_create_tg_user)(tg_user_id)
         referred_by = user.get("referred_by")
 
-        print("User:", user)
-        print("refferd_bu", referred_by)
-
         script = await sync_to_async(operations.create_script)(tg_user_id, start_at)
 
         await bot.send_message(
             chat_id=tg_user_id,
             text=(
-                f"Script: {script.get('script')}\n"
-                f"Key: {script.get('key')}\n"
-                f"Started at: {script.get('start_at')}\n"
-                f"Stop at: {script.get('stop_at')}\n"
-                f"Is active/buy: {script.get('is_active')}\n"
-                f"Used: {script.get('max_usage')}/{script.get('used')}\n"
-                f"Owner id: {script.get('max_usage')}"
-            )
+                f"✅ <b>Сценарий почти активировано</b>\n\n"
+                f"🔑 <b>Ключ:</b> {script.get('key', '-')}\n"
+                f"⏱ <b>Начало:</b> {script.get('start_at', '-')}\n"
+                f"⏳ <b>Окончание:</b> {script.get('stop_at', '-')}\n"
+            ),
+            parse_mode="HTML",
+            reply_markup=inline.change_buy(script.get('key', '-'))
         )
 
         if referred_by:

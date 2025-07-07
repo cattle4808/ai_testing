@@ -39,3 +39,33 @@ def back_support():
             ]
         ]
     )
+
+def send_or_receive_payment(key) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="📤 Отправить на проверку",
+                    callback_data=f"send:{key}",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="📥 заново отправить чек",
+                    callback_data=f"pay:{key}",
+                )
+            ]
+        ]
+    )
+
+def change_buy(key):
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Оплатить",
+                    callback_data=f"buy:{key}"
+                )
+            ]
+        ]
+    )

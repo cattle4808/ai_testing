@@ -1,6 +1,7 @@
 from aiogram import Router
 from aiogram import F, types
 from asgiref.sync import sync_to_async
+from django.conf import settings
 
 from bot.keyboards.user import inline as user_inline, reply as user_reply
 from bot.keyboards.admin import inline as admin_inline, reply as admin_reply
@@ -24,8 +25,8 @@ async def my_referrals(message: types.Message):
     referral_buys = await sync_to_async(operations.get_referrals_counts)(user_id)
     invited_users = await sync_to_async(operations.get_referrals_inviters)(user_id)
 
-    reward_per_referral = 25_000
-    max_discount = 125_000
+    reward_per_referral = settings.REWERD_PER_REFFERAL
+    max_discount = settings.MAX_DISCOUNT
 
     successful_referrals = len(referral_buys["all"])
     unused_referrals = len(referral_buys["unused"])
@@ -50,6 +51,7 @@ async def my_referrals(message: types.Message):
 @user.message(F.text == CommandMap.User.INSTRUCTION)
 async def instruction(message: types.Message):
     await message.answer("Инструкция")
+
 
 @user.message(F.text == CommandMap.User.SUPPORT)
 async def support(message: types.Message):

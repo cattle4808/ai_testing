@@ -1,6 +1,10 @@
+from pyexpat.errors import messages
+
 from aiogram import Router, F, types
 
 from .. user import user_inline
+from services.models import operations
+
 
 user_callback = Router()
 
@@ -51,4 +55,24 @@ async def support(callback: types.CallbackQuery):
         "🎯 <b>Ваша уверенность</b> — наша ответственность.\n\n",
         parse_mode="HTML",
         reply_markup=user_inline.support()
+    )
+
+
+@user_callback.callback_query(F.data.regexp(r"^buy:(.+)$"))
+async def buy(callback: types.CallbackQuery):
+    session_key = callback.data.split("pay:")[1]
+    referrals = operations.get_referrals_counts(callback.from_user.id)
+
+    await callback.answer(
+        str(referrals)
+    )
+
+    await callback.answer(
+            "💳 <b>Оплата 250 000 сум</b>\n\n"
+            f"🆔:<code>{session_key}</code>\n\n"
+            "💰 <b>Карта для перевода:</b>\n<code>5614 6805 1994 2698</code>\n"
+            f"Владелец: <b>UMEDJANOV.A</b>\n\n"
+            "📸 После оплаты просто пришли сюда фото или скриншот чека.",
+        parse_mode="HTML",
+        reply_markup=user_inline.cancel_keyboard()
     )
