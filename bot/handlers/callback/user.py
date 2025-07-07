@@ -60,7 +60,7 @@ async def support(callback: types.CallbackQuery):
 
 @user_callback.callback_query(F.data.regexp(r"^buy:(.+)$"))
 async def buy(callback: types.CallbackQuery):
-    session_key = callback.data.split("pay:")[1]
+    session_key = callback.data.split("buy:")[1]
     referrals = operations.get_referrals_counts(callback.from_user.id)
 
     await callback.message.answer(
