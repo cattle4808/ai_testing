@@ -30,7 +30,6 @@ async def buy_script(message: types.Message):
     )
 
 
-
 @user.message(F.text == CommandMap.User.MY_DATA)
 async def my_referrals(message: types.Message):
     user_id = message.from_user.id

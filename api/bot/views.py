@@ -55,11 +55,6 @@ async def create_script_view(request):
 
         script = await sync_to_async(operations.create_script)(tg_user_id, start_at)
 
-        await bot.delete_message(
-            chat_id=tg_user_id,
-            message_id=script.get('message_id')
-        )
-
         await bot.send_message(
             chat_id=tg_user_id,
             text=(
