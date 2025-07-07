@@ -31,7 +31,7 @@ def get_or_create_tg_user(user_id: int, ref_by: int = None) -> dict:
 @catch_error("ERR_CREATE_SCRIPT")
 def create_script(user_id: int, start_at: datetime, stop_at: datetime = None) -> dict:
     if stop_at is None:
-        stop_at = timezone.now() + timedelta(hours=2)
+        stop_at =  start_at + timedelta(hours=2)
 
     # def_get_referrals = models.Referral.objects.filter(inviter=user_id, used=False)
     # if def_get_referrals.exists():
