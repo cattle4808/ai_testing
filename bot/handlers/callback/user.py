@@ -59,11 +59,11 @@ async def support(callback: types.CallbackQuery):
     )
 
 
-@user_callback.callback_query(F.data.regexp(r"^buy:(.+)$"))
+@user_callback.callback_query(F.data.regexp(r"^buy_script:(.+)$"))
 async def buy(callback: types.CallbackQuery):
     await callback.answer()
 
-    redis_key = callback.data.split("buy:")[1]
+    redis_key = callback.data.split("buy_script:")[1]
     redis_key = callback.data.split("buy_script:")[1]
     data_json = await redis.get(f"buy_script:{redis_key}")
 
