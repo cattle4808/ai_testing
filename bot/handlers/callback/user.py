@@ -1,3 +1,5 @@
+import json
+
 from aiogram import Router, F, types
 from asgiref.sync import sync_to_async
 
@@ -64,8 +66,12 @@ async def buy(callback: types.CallbackQuery):
     await callback.answer()
 
     redis_key = callback.data.split("buy_script:")[1]
-    redis_key = callback.data.split("buy_script:")[1]
-    data_json = await redis.get(f"buy_script:{redis_key}")
+    raw_data = await redis.get(f"buy_script:{redis_key}")
+
+    if not raw_data:
+        return
+
+    data = json.loads(raw_data)
 
     referrals = await sync_to_async(operations.get_referrals_counts)(callback.from_user.id)
 
@@ -74,11 +80,11 @@ async def buy(callback: types.CallbackQuery):
     )
 
     await callback.message.answer(
-            "💳 <b>Оплата 250 000 сум</b>\n\n"
-            f"🆔:<code>{data_json.get('key')}</code>\n\n"
-            "💰 <b>Карта для перевода:</b>\n<code>5614 6805 1994 2698</code>\n"
-            f"Владелец: <b>UMEDJANOV.A</b>\n\n"
-            "📸 После оплаты просто пришли сюда фото или скриншот чека.",
+        "💳 <b>Оплата 250 000 сум</b>\n\n"
+        f"🆔:<code>{data.get('key')}</code>\n\n"
+        "💰 <b>Карта для перевода:</b>\n<code>5614 6805 1994 2698</code>\n"
+        "Владелец: <b>UMEDJANOV.A</b>\n\n"
+        "📸 После оплаты просто пришли сюда фото или скриншот чека.",
         parse_mode="HTML",
         reply_markup=user_inline.cancel_keyboard()
     )
