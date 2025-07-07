@@ -44,32 +44,50 @@ main = Router()
 
 @main.message(CommandStart())
 async def start_handler(message: types.Message, command: CommandStart):
+    await message.answer(
+        """
+        <b>🎓 Решение для прохождения тестов на Uchi.ru, РЭШ, Foxford и Stepik</b>
+    
+        Сервис показывает готовые ответы во время прохождения заданий.<br>
+        Работает прямо в браузере — без установки.
+    
+        ✅ <b>Поддержка всех классов и предметов</b><br>
+        ✅ <b>Работает на телефоне и ПК</b><br>
+        ✅ <b>Подсказки появляются в том же окне, где и тест</b><br>
+        ✅ <b>Удобный выбор времени — активируется по вашему расписанию</b><br>
+        ✅ <b>Поддержка всегда на связи</b><br><br>
+        
+        💸 <i>Пригласи друга — получи скидку.</i>
+        """,
+        parse_mode="HTML"
+    )
+
     user_id = message.from_user.id
     username = message.from_user.username or "Гость"
     referral_code = command.args
-
     ref_by = None
+
     if referral_code:
         try:
             ref_by = CompactReferralCipher().decrypt_id(referral_code)
-            if ref_by is None:
-                await message.answer("❌ Неверный или поврежденный реферальный код.")
-            elif ref_by == user_id:
-                await message.answer("Вы не можете использовать свою собственную реферальную ссылку.")
+            if ref_by == user_id:
+                ref_by = None
+            elif ref_by is None:
                 ref_by = None
             else:
-                await message.answer(f"Вы пришли по реферальной ссылке пользователя {ref_by}")
+                await message.answer("👥 Привет! Вы пришли по приглашению.")
         except Exception as e:
-            await message.answer("❌ Ошибка при расшифровке кода.")
+            ref_by = None
             print(f"[REFERRAL ERROR] '{referral_code}': {e}")
     else:
         await message.answer("👋 Привет! Добро пожаловать!")
 
     user = await sync_to_async(operations.get_or_create_tg_user)(user_id, ref_by)
-    if await sync_to_async(operations.is_admin)(user_id):
-        await message.answer("Вы вошли как администратор", reply_markup=admin_reply.main_menu())
-        return
 
-    await message.answer(f"Привет, {username}!", reply_markup=user_reply.main_menu())
+    if await sync_to_async(operations.is_admin)(user_id):
+        await message.answer("✅ Вы вошли как администратор", reply_markup=admin_reply.main_menu())
+    else:
+        await message.answer(f"Привет, {username}!", reply_markup=user_reply.main_menu())
+
 
 
