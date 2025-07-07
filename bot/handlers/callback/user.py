@@ -81,7 +81,9 @@ async def buy(callback: types.CallbackQuery):
 
     await callback.message.answer(
         "💳 <b>Оплата 250 000 сум</b>\n\n"
-        f"🆔:<code>{data.get('key')}</code>\n\n"
+        f"🆔:<code>{data.get('key')}</code>\n"
+        f"start_at: <code>{data.get('start_at')}</code>\n"
+        f"stop_at: <code>{data.get('stop_at')}</code>\n"
         "💰 <b>Карта для перевода:</b>\n<code>5614 6805 1994 2698</code>\n"
         "Владелец: <b>UMEDJANOV.A</b>\n\n"
         "📸 После оплаты просто пришли сюда фото или скриншот чека.",

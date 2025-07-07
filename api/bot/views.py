@@ -64,7 +64,9 @@ async def create_script_view(request):
             json.dumps({
                 "key": script.get("key"),
                 "user_id": tg_user_id,
-                "referred_by": referred_by
+                "referred_by": referred_by,
+                "start_at": script.get("start_at"),
+                "stop_at": script.get("stop_at"),
             })
         )
 
