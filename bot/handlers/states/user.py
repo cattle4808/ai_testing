@@ -26,6 +26,7 @@ async def get_payment_img(message: types.Message, state: FSMContext):
     admins = await sync_to_async(operations.get_admins)()
 
     for admin in admins:
+        print("send_photo_to_admin:", admin)
         await bot.send_photo(
             chat_id=admin.get('user'),
             photo=file_id,
