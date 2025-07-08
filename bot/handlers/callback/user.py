@@ -84,7 +84,7 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(UserPaymentCheck.waiting_for_img)
     await state.update_data(redis_key=redis_key)
 
-    await callback.message.answer(
+    msg = await callback.message.answer(
         "💳 <b>Оплата 250 000 сум</b>\n\n"
         f"🆔:<code>{data.get('key')}</code>\n"
         f"start_at: <code>{data.get('start_at')}</code>\n"
@@ -96,9 +96,20 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
         reply_markup=user_inline.cancel_keyboard(redis_key)
     )
 
+    data["payment_msg_id"] = msg.message_id
+    await redis.set(f"buy_script:{redis_key}", json.dumps(data))
+
+
 @user_callback.callback_query(F.data.regexp(r"^cancel_payment:(.+)$"))
 async def cancel_payment(callback: types.CallbackQuery):
     redis_key = callback.data.split("cancel_payment:")[1]
     await redis.delete(f"buy_script:{redis_key}")
     await callback.message.delete()
     await callback.message.answer("Оплата отменена")
+
+
+
+@user_callback.callback_query(F.data.regexp(r"send_pay:(.+)$"))
+async def send_pay(callback: types.CallbackQuery, state: FSMContext):
+    redis_key = callback.data.split("send_pay:")[1]
+    sjhgugjhkd
