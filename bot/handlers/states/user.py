@@ -1,9 +1,10 @@
 from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
+import json
 
 from ... fsm.user import UserPaymentCheck
-from ... import bot
+from ... import bot, redis
 from .. user import admin_inline
 from services.models import operations
 
@@ -20,17 +21,26 @@ async def get_payment_img(message: types.Message, state: FSMContext):
         await state.clear()
         return
 
+    raw_data = await redis.get(f"buy_script:{redis_key}")
+
+    if not raw_data:
+        return
+
+    data = json.loads(raw_data)
     photo = message.photo[-1]
     file_id = photo.file_id
 
     admins = await sync_to_async(operations.get_admins)()
+    txt = ''
+    for _ in data:
+        txt + str(_) + "\n"
 
     for admin in admins:
         print("send_photo_to_admin:", admin)
         await bot.send_photo(
             chat_id=admin.get('user'),
             photo=file_id,
-            caption=f'User: {message.from_user.id}\n',
+            caption=f'{txt}\n',
             reply_markup=admin_inline.check_payment(redis_key)
         )
 
