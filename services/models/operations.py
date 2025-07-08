@@ -110,10 +110,15 @@ def get_referrals_counts(user_id: int) -> dict:
 
 
 @catch_error("ERR_GET_REFERRAL_INVITERS")
-def get_referrals_inviters(user_id: int):
+def get_referrals_inviters(user_id: int) -> list[dict]:
     users = models.TgUsers.objects.filter(referred_by__user=user_id)
     return [model_to_dict(user, fields=['user', 'is_admin', 'username', 'referred_by']) for user in users]
 
-@catch_error("IS_ADMIN")
+@catch_error("ERR_IS_ADMIN")
 def is_admin(user_id: int) -> bool:
     return models.TgUsers.objects.filter(user=user_id, is_admin=True).exists()
+
+
+@catch_error("ERR_GET_ADMINS")
+def get_admins() -> list[dict]:
+    return model_to_dict(models.TgUsers.objects.filters(is_admin=True), fields=['user', 'if_admin'])

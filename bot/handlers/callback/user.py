@@ -1,10 +1,12 @@
 import json
 
 from aiogram import Router, F, types
+from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
 
 from .. user import user_inline
 from ... import redis
+from ... fsm.user import UserPaymentCheck
 
 from services.models import operations
 
@@ -62,7 +64,7 @@ async def support(callback: types.CallbackQuery):
 
 
 @user_callback.callback_query(F.data.regexp(r"^buy_script:(.+)$"))
-async def buy(callback: types.CallbackQuery):
+async def buy(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
 
     redis_key = callback.data.split("buy_script:")[1]
@@ -79,6 +81,9 @@ async def buy(callback: types.CallbackQuery):
         f"Доступные реферралки: {len(referrals.get('unused'))}\n"
     )
 
+    await state.set_state(UserPaymentCheck.waiting_for_img)
+    await state.update_data(redis_key=redis_key)
+
     await callback.message.answer(
         "💳 <b>Оплата 250 000 сум</b>\n\n"
         f"🆔:<code>{data.get('key')}</code>\n"
@@ -90,7 +95,6 @@ async def buy(callback: types.CallbackQuery):
         parse_mode="HTML",
         reply_markup=user_inline.cancel_keyboard(redis_key)
     )
-
 
 @user_callback.callback_query(F.data.regexp(r"^cancel_payment:(.+)$"))
 async def cancel_payment(callback: types.CallbackQuery):
