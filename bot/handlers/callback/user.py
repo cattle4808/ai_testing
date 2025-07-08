@@ -84,8 +84,10 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(UserPaymentCheck.waiting_for_img)
     await state.update_data(redis_key=redis_key)
 
+    check_sum = 250_000
+
     msg = await callback.message.answer(
-        "💳 <b>Оплата 250 000 сум</b>\n\n"
+        f"💳 <b>Оплата {check_sum} сум</b>\n\n"
         f"🆔:<code>{data.get('key')}</code>\n"
         f"start_at: <code>{data.get('start_at')}</code>\n"
         f"stop_at: <code>{data.get('stop_at')}</code>\n"
@@ -97,6 +99,7 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
     )
 
     data["payment_msg_id"] = msg.message_id
+    data["check_sum"] = check_sum
     await redis.set(f"buy_script:{redis_key}", json.dumps(data))
 
 
