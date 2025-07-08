@@ -34,6 +34,7 @@ async def get_payment_img(message: types.Message, state: FSMContext):
             reply_markup=admin_inline.check_payment(redis_key)
         )
 
+    await message.answer("идет проверка")
     await state.clear()
 
 
