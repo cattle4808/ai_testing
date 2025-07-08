@@ -121,4 +121,7 @@ def is_admin(user_id: int) -> bool:
 
 @catch_error("ERR_GET_ADMINS")
 def get_admins() -> list[dict]:
-    return model_to_dict(models.TgUsers.objects.filters(is_admin=True), fields=['user', 'if_admin'])
+    return [
+        model_to_dict(admin, fields=["user", "is_admin"])
+        for admin in models.TgUsers.objects.filter(is_admin=True)
+    ]
