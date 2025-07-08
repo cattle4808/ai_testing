@@ -26,14 +26,16 @@ async def get_payment_img(message: types.Message, state: FSMContext):
     if not raw_data:
         return
 
-    data = json.loads(raw_data)
+    redis_data = json.loads(raw_data)
     photo = message.photo[-1]
     file_id = photo.file_id
 
     admins = await sync_to_async(operations.get_admins)()
     txt = ''
-    for _ in data:
+    for _ in redis_data:
         txt + str(_) + "\n"
+
+    print(data)
 
     for admin in admins:
         print("send_photo_to_admin:", admin)
@@ -43,7 +45,7 @@ async def get_payment_img(message: types.Message, state: FSMContext):
             caption=f'{txt}\n',
             reply_markup=admin_inline.check_payment(redis_key)
         )
-
+    await message.answer(str(redis_data))
     await message.answer("идет проверка")
     await state.clear()
 
