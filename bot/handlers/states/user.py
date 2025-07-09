@@ -45,11 +45,20 @@ async def get_payment_img(message: types.Message, state: FSMContext):
 
     await state.set_state(UserPaymentCheck.waiting_for_accept)
 
+    caption = (f"🆔: <code>{data.get('key')}</code>\n\n"
+               f"start_at: <code>{data.get('start_at')}</code>\n"
+               f"stop_at: <code>{data.get('stop_at')}</code>\n\n"
+               f"payment_sum: <code>{data.get('payment_sum')}</code>\n\n")
     await bot.send_photo(
         chat_id=message.from_user.id,
         photo=file_id,
         caption=str(data),
         reply_markup=user_inline.send_or_receive_payment(redis_key)
+    )
+
+    await message.delete()
+    await message.answer(
+        "Идет проверка оплаты..."
     )
 
 

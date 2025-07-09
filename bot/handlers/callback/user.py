@@ -84,10 +84,10 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(UserPaymentCheck.waiting_for_img)
     await state.update_data(redis_key=redis_key)
 
-    check_sum = 250_000
+    payment_sum = 250_000
 
     msg = await callback.message.answer(
-        f"💳 <b>Оплата {check_sum} сум</b>\n\n"
+        f"💳 <b>Оплата {payment_sum} сум</b>\n\n"
         f"🆔:<code>{data.get('key')}</code>\n"
         f"start_at: <code>{data.get('start_at')}</code>\n"
         f"stop_at: <code>{data.get('stop_at')}</code>\n"
@@ -99,7 +99,7 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
     )
 
     data["payment_msg_id"] = msg.message_id
-    data["check_sum"] = check_sum
+    data["payment_sum"] = payment_sum
     await redis.set(f"buy_script:{redis_key}", json.dumps(data))
 
 
@@ -128,13 +128,19 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
     data = json.loads(raw_data)
 
     admins = await sync_to_async(operations.get_admins)()
+
+    _admins_list = []
     for admin in admins:
+        _admins_list.append(admin.get("user"))
         await callback.bot.send_photo(
             chat_id=admin.get("user"),
             photo=data.get("file_id"),
             caption=f"🆔: <code>{redis_key}</code>",
             reply_markup=admin_inline.check_payment(redis_key)
         )
+
+    data["admins"] = _admins_list
+    await redis.set(f"buy_script:{redis_key}", json.dumps(data))
 
 @user_callback.callback_query(F.data.regexp(r"resend_pay:(.+)$"))
 async def recheck_pay(callback: types.CallbackQuery, state: FSMContext):
