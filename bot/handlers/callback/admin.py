@@ -17,24 +17,19 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
     key = raw_data.get("key")
 
     change_script = await sync_to_async(operations.change_script_status)(key, True)
-    # await bot.delete_message(
-    #     chat_id=raw_data.get("user_id"),
-    #     message_id=raw_data.get("payment_msg_id")
-    # )
 
     await bot.send_message(
         chat_id=raw_data.get("user_id"),
         text=f"Оплата принятат\n\n"
              f"{change_script}"
-
     )
 
-    for admin in raw_data.get("admins"):
+    for admin, msg_id in raw_data.get("admins").items():
         print(admin)
 
         await bot.edit_message_caption(
             chat_id=int(admin),
-            message_id=callback.message.message_id,
+            message_id=msg_id,
             caption=f" {raw_data}: \n\nОплата принята",
             reply_markup=None
         )

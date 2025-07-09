@@ -132,22 +132,24 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
     #     message_id=callback.message.message_id,
     #     reply_markup=None
     # )
-
     admins = await sync_to_async(operations.get_admins)()
 
-    _admins_list = []
+    _admins_dict = {}
+
     for admin in admins:
-        _admins_list.append(admin.get("user"))
-        await callback.bot.send_photo(
-            chat_id=admin.get("user"),
+        admin_id = admin.get("user")
+        message = await callback.bot.send_photo(
+            chat_id=admin_id,
             photo=data.get("file_id"),
             caption=f"🆔: <code>{redis_key}</code>",
             reply_markup=admin_inline.check_payment(redis_key),
             parse_mode="HTML"
         )
+        _admins_dict[str(admin_id)] = message.message_id
 
-    data["admins"] = _admins_list
+    data["admins"] = _admins_dict
     await redis.set(f"buy_script:{redis_key}", json.dumps(data))
+
 
     await bot.edit_message_reply_markup(
         chat_id=callback.from_user.id,
