@@ -142,7 +142,8 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
             chat_id=admin.get("user"),
             photo=data.get("file_id"),
             caption=f"🆔: <code>{redis_key}</code>",
-            reply_markup=admin_inline.check_payment(redis_key)
+            reply_markup=admin_inline.check_payment(redis_key),
+            parse_mode="HTML"
         )
 
     data["admins"] = _admins_list
