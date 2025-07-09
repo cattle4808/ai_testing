@@ -59,11 +59,6 @@ async def get_payment_img(message: types.Message, state: FSMContext):
         reply_markup=user_inline.send_or_receive_payment(redis_key)
     )
 
-    await message.answer(
-        "Идет проверка оплаты..."
-    )
-
-
     # admins = await sync_to_async(operations.get_admins)()
     # txt = ''
     # for _ in redis_data:
