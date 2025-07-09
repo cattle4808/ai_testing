@@ -30,6 +30,7 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
     )
 
     for admin in raw_data.get("admins"):
+        print(admin)
         await bot.edit_message_caption(
             chat_id=int(admin),
             message_id=raw_data.get("payment_msg_id"),
