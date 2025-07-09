@@ -19,16 +19,22 @@ async def get_payment_img(message: types.Message, state: FSMContext):
     redis_key = redis_data.get("redis_key")
 
     if not redis_key:
-        await message.answer("⚠️ Ошибка: Попробуй заново.")
         await state.clear()
         return
 
     raw_data = await redis.get(f"buy_script:{redis_key}")
-
     if not raw_data:
         return
-
     data = json.loads(raw_data)
+
+    payment_msg_id = data.get("payment_msg_id")
+
+    await bot.edit_message_reply_markup(
+        chat_id=message.from_user.id,
+        message_id=payment_msg_id,
+        reply_markup=None
+    )
+
     photo = message.photo[-1]
     file_id = photo.file_id
 
