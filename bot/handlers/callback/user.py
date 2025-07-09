@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
 
 from .. user import user_inline, admin_inline
-from ... import redis
+from ... import redis, bot
 from ... fsm.user import UserPaymentCheck
 
 from services.models import operations
@@ -141,6 +141,12 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
 
     data["admins"] = _admins_list
     await redis.set(f"buy_script:{redis_key}", json.dumps(data))
+
+    await bot.edit_message_reply_markup(
+        chat_id=callback.from_user.id,
+        message_id=callback.message.message_id,
+        reply_markup=None
+    )
 
 @user_callback.callback_query(F.data.regexp(r"resend_pay:(.+)$"))
 async def recheck_pay(callback: types.CallbackQuery, state: FSMContext):
