@@ -1,10 +1,12 @@
+import json
+
 from . main import main
 from . admin import admin
 from . user import user
 from . states import state_user
 from . callback import user_callback
 
-from .. import dp
+from .. import dp, redis
 
 
 def set_router():
@@ -15,3 +17,10 @@ def set_router():
     dp.include_router(user_callback)
 
 __all__ = ['main', 'admin', 'user', 'user_callback', 'state_user']
+
+async def get_redist_data(redis_id_key: str) -> dict:
+    raw_data = await redis.get(redis_id_key)
+    if not raw_data:
+        return {}
+    data = json.loads(raw_data)
+    return data

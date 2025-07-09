@@ -4,6 +4,7 @@ from asgiref.sync import sync_to_async
 import json
 
 from ... fsm.user import UserPaymentCheck
+from ... fsm.admin import AdminPaymentCheck
 from ... import bot, redis
 from .. user import admin_inline, user_inline
 from services.models import operations
@@ -33,6 +34,11 @@ async def get_payment_img(message: types.Message, state: FSMContext):
 
     await state.set_state(UserPaymentCheck.waiting_for_accept)
 
+    data["file_id"] = file_id
+    await redis.set(f"buy_script:{redis_key}", json.dumps(data))
+
+    await state.set_state(UserPaymentCheck.waiting_for_accept)
+
     await bot.send_photo(
         chat_id=message.from_user.id,
         photo=file_id,
@@ -58,8 +64,6 @@ async def get_payment_img(message: types.Message, state: FSMContext):
     #     )
     # await message.answer(str(redis_data))
     # await message.answer("идет проверка")
-    await state.clear()
-
 
 
 @state_user.message(UserPaymentCheck.waiting_for_img)

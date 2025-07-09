@@ -4,7 +4,7 @@ from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
 
-from .. user import user_inline
+from .. user import user_inline, admin_inline
 from ... import redis
 from ... fsm.user import UserPaymentCheck
 
@@ -115,4 +115,29 @@ async def cancel_payment(callback: types.CallbackQuery):
 @user_callback.callback_query(F.data.regexp(r"send_pay:(.+)$"))
 async def send_pay(callback: types.CallbackQuery, state: FSMContext):
     redis_key = callback.data.split("send_pay:")[1]
-    sjhgugjhkd
+
+    if not redis_key:
+        await state.clear()
+        return
+
+    raw_data = await redis.get(f"buy_script:{redis_key}")
+
+    if not raw_data:
+        return
+
+    data = json.loads(raw_data)
+
+    admins = await sync_to_async(operations.get_admins)()
+    for admin in admins:
+        await callback.bot.send_photo(
+            chat_id=admin.get("user"),
+            photo=data.get("file_id"),
+            caption=f"🆔: <code>{redis_key}</code>",
+            reply_markup=admin_inline.check_payment(redis_key)
+        )
+
+@user_callback.callback_query(F.data.regexp(r"resend_pay:(.+)$"))
+async def recheck_pay(callback: types.CallbackQuery, state: FSMContext):
+    redis_key = callback.data.split("recheck_pay:")[1]
+
+    await callback.message.answer("Проверка...")

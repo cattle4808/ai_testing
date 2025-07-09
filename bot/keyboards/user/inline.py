@@ -52,7 +52,7 @@ def send_or_receive_payment(key) -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(
                     text="📥 заново отправить чек",
-                    callback_data=f"recheck_pay:{key}",
+                    callback_data=f"resend_pay:{key}",
                 )
             ]
         ]
