@@ -126,7 +126,6 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
 
     chat = await bot.get_chat(raw_data.get('user_id'))
     user_name = chat.username or 'скрыт'
-
     caption_2 = (
         f"User_id: {raw_data.get('user_id')}\n"
         f"user_name: {user_name}\n"
