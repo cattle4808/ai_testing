@@ -30,7 +30,11 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
         f"{settings.GET_SCRIPT_URL}/{change_script.get('script')}\n\n"
         f"📌 Пожалуйста, будьте на связи в этот период — система включится автоматически."
     )
-    await bot.send_message(chat_id=raw_data.get("user_id"), text=user_message_text)
+    await bot.send_photo(
+        chat_id=raw_data.get("user_id"),
+        photo=raw_data.get("file_id"),
+        caption=user_message_text
+    )
 
     for admin, msg_id in raw_data.get("admins").items():
         await bot.edit_message_caption(
