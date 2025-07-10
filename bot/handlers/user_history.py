@@ -89,9 +89,9 @@ async def render_sessions_page(message: types.Message, scripts: list, page: int)
 @user_history.message(F.text == CommandMap.User.MY_SCRIPTS)
 async def my_sessions_handler(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
-    if current_state:
-        await message.answer("⚠️ Завершите текущую операцию")
-        return
+    # if current_state:
+    #     await message.answer("⚠️ Завершите текущую операцию")
+    #     return
 
     await state.clear()
     await state.set_state(HistoreState.button)
