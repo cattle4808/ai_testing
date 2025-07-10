@@ -52,7 +52,7 @@ async def render_sessions_page(message: types.Message, scripts: list, page: int)
         text += (
             f"🆔 <code>{s['key']}</code>\n"
             f"📜 {s['script']}\n"
-            f"⏱ {s['start_at'] - s['stop_at']}\n"
+            f"⏱ {s['start_at']} - {s['stop_at']}\n"
             f"{'💰 Оплачено' if s['is_paid'] else '🚫 Не оплачено'}\n"
             f"_____________\n\n"
         )
