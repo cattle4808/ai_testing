@@ -8,5 +8,7 @@ urlpatterns = [
 
     path('create_script_select_time/', views.create_script_view),
     path('select_time/', views.select_time),
-    path('redact_time/', views.redact_time)
+    path('redact_time/', views.redact_time),
+
+    path('change_time_view/', views.change_time_view),
 ]

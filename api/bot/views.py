@@ -95,7 +95,7 @@ async def create_script_view(request):
 
 
 @csrf_exempt
-async def change_time(request):
+async def change_time_view(request):
     if request.method != "POST":
         raise Http404()
 
