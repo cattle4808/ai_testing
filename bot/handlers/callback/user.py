@@ -127,11 +127,6 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
 
     data = json.loads(raw_data)
 
-    # await bot.edit_message_reply_markup(
-    #     chat_id=callback.from_user.id,
-    #     message_id=callback.message.message_id,
-    #     reply_markup=None
-    # )
     admins = await sync_to_async(operations.get_admins)()
 
     _admins_dict = {}

@@ -23,6 +23,7 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
         f"✅ Оплата подтверждена\n\n"
         f"Ваша оплата успешно получена и подтверждена.\n"
         f"Решение будет автоматически активировано в указанный промежуток времени:\n\n"
+        f"🆔: <code>{raw_data.get('key')}</code>\n\n"
         f"⏱️ Начало: {change_script.get('start_at')}\n"
         f"⏱️ Окончание: {change_script.get('stop_at')}\n\n"
         f"🔗 Ссылка на решение:\n"
@@ -46,12 +47,17 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
             parse_mode="HTML"
         )
 
-        await bot.delete_message(
-            chat_id=raw_data.get("user_id"),
-            message_id=raw_data.get("payment_msg_id")
-        )
-        await state.clear()
-        await redis.delete(f"buy_script:{redis_key}")
+    await bot.delete_message(
+        chat_id=raw_data.get("user_id"),
+        message_id=raw_data.get("payment_msg_id")
+    )
+
+    await bot.delete_message(
+        chat_id=raw_data.get("user_id"),
+        message_id=raw_data.get("send_payment_msg_id")
+    )
+    await state.clear()
+    await redis.delete(f"buy_script:{redis_key}")
 
 
 @admin_callback.callback_query(F.data.regexp(r"deny_payment_from_admin:(.+)$"))

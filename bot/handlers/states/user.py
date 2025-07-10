@@ -52,30 +52,17 @@ async def get_payment_img(message: types.Message, state: FSMContext):
                f"stop_at: <code>{data.get('stop_at')}</code>\n\n"
                f"payment_sum: <code>{data.get('payment_sum')}</code>\n\n")
 
-    await bot.send_photo(
+    msg =await bot.send_photo(
         chat_id=message.from_user.id,
         photo=file_id,
-        caption=str(data),
-        reply_markup=user_inline.send_or_receive_payment(redis_key)
+        caption=caption,
+        reply_markup=user_inline.send_or_receive_payment(redis_key),
+        parse_mode="HTML"
     )
 
-    # admins = await sync_to_async(operations.get_admins)()
-    # txt = ''
-    # for _ in redis_data:
-    #     txt + str(_) + "\n"
-    #
-    # print(data)
-    #
-    # for admin in admins:
-    #     print("send_photo_to_admin:", admin)
-    #     await bot.send_photo(
-    #         chat_id=admin.get('user'),
-    #         photo=file_id,
-    #         caption=f'{txt}\n',
-    #         reply_markup=admin_inline.check_payment(redis_key)
-    #     )
-    # await message.answer(str(redis_data))
-    # await message.answer("идет проверка")
+    data["send_payment_msg_id"] = msg.message_id
+    await redis.set(f"buy_script:{redis_key}", json.dumps(data))
+
 
 
 @state_user.message(UserPaymentCheck.waiting_for_img)
