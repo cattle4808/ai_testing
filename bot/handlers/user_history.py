@@ -104,7 +104,7 @@ async def paginate_sessions(callback: types.CallbackQuery, state: FSMContext):
             f" <code>{s['key']}</code>\n"
             f"📜 {s['script']}\n"
             f"⏱ {start} - {start}\n"
-            f"{'💰 Оплачено' if s['is_paid'] else '🚫 Не оплачено'}\n"
+            f"{'💰 Оплачено' if s['is_active'] else '🚫 Не оплачено'}\n"
             f"_____________\n\n"
         )
     await callback.message.edit_text(
