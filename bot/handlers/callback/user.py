@@ -111,7 +111,7 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
 
 
 @user_callback.callback_query(F.data.regexp(r"^cancel_payment:(.+)$"))
-async def cancel_payment(callback: types.CallbackQuery):
+async def cancel_payment(callback: types.CallbackQuery, state: FSMContext):
     redis_key = callback.data.split("cancel_payment:")[1]
 
     raw_data = await redis.get(f"buy_script:{redis_key}")
@@ -128,15 +128,30 @@ async def cancel_payment(callback: types.CallbackQuery):
             except:
                 pass
 
-    await redis.delete(f"buy_script:{redis_key}")
-
     try:
         await callback.message.delete()
     except:
         pass
 
-    await callback.message.answer("❌ <b>Оплата отменена</b>", parse_mode="HTML")
+    try:
+        await bot.delete_message(
+            chat_id=raw_data.get("user_id"),
+            message_id=raw_data.get("payment_msg_id")
+        )
+    except:
+        pass
 
+    try:
+        await bot.delete_message(
+            chat_id=raw_data.get("user_id"),
+            message_id=raw_data.get("send_payment_msg_id")
+        )
+    except:
+        pass
+    await state.clear()
+    await redis.delete(f"buy_script:{redis_key}")
+
+    await callback.message.answer("❌ <b>Оплата отменена</b>", parse_mode="HTML")
 
 
 
