@@ -132,7 +132,7 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
     _admins_dict = {}
 
     caption = (f"User_id: {data.get('user_id')}\n"
-               f"user_name: {await bot.get_user(data.get('user_id')).username}\n"
+               f"user_name: {await bot.get_chat(data.get('user_id')).username}\n"
                 f"🆔: <code>{data.get('key')}</code>\n\n"
                 f"сумма: <b>{data.get('payment_sum')}</b>\n"
                 f"start_at: <code>{data.get('start_at')}</code>\n"
