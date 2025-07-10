@@ -3,7 +3,6 @@ from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
 from django.conf import settings
-from aiogram.utils.markdown import quote_html
 
 from services.models import operations
 from ... import redis, bot
