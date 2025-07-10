@@ -59,7 +59,7 @@ async def render_sessions_page(message: types.Message, scripts: list, page: int)
 
     await message.answer(
         text,
-        reply_markup=inline_history.get_page_keyboard_sessions_history(page, max_page),
+        reply_markup=inline_history.get_page_keyboard_sessions_history(page, max_page, current),
         parse_mode="HTML"
     )
 
