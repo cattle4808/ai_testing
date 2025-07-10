@@ -131,15 +131,19 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
 
     _admins_dict = {}
 
+    caption = (f"User_id: {raw_data.get('user_id')}\n"
+               f"user_name: {await bot.get_user(raw_data.get('user_id')).username}\n"
+                f"🆔: <code>{data.get('key')}</code>\n\n"
+                f"сумма: <b>{data.get('payment_sum')}</b>\n"
+                f"start_at: <code>{data.get('start_at')}</code>\n"
+                f"stop_at: <code>{data.get('stop_at')}</code>\n")
+
     for admin in admins:
         admin_id = admin.get("user")
         message = await callback.bot.send_photo(
             chat_id=admin_id,
             photo=data.get("file_id"),
-            caption=f"🆔: <code>{data.get('key')}</code>\n\n"
-                    f"сумма: <b>{data.get('payment_sum')}</b>\n"
-                    f"start_at: <code>{data.get('start_at')}</code>\n"
-                    f"stop_at: <code>{data.get('stop_at')}</code>\n",
+            caption=caption,
             reply_markup=admin_inline.check_payment(redis_key),
             parse_mode="HTML"
         )
