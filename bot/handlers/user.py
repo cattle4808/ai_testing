@@ -127,6 +127,18 @@ async def my_shops(message: types.Message, state: FSMContext):
             pass
         await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
         return
-    await message.delete()
+
+    user_id = message.from_user.id
+
+    await message.answer(
+        "<b>📂 Мои скрипты</b>\n\n"
+        "Здесь вы можете управлять своими скриптами.\n"
+    )
+
+    my_scripts = await sync_to_async(operations.get_my_scripts)(user_id)
+
+    await message.answer(
+        str(my_scripts)
+    )
 
 

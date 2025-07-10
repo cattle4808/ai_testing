@@ -50,6 +50,7 @@ def create_script(user_id: int, start_at: datetime, stop_at: datetime = None) ->
     data['owner_id'] = script.owner_id
     return data
 
+
 @catch_error("ERR_CREATE_TESTING_SCRIPT")
 def create_testing_script(script_name: str) -> dict:
     user_id = 123456
@@ -77,8 +78,6 @@ def create_testing_script(script_name: str) -> dict:
     return data
 
 
-
-
 @catch_error("ERR_ADD_TO_REFERRAL")
 def add_to_referral(inviter_user_id: int, invited_user_id: int) -> dict:
     inviter = models.TgUsers.objects.get(user=inviter_user_id)
@@ -90,6 +89,7 @@ def add_to_referral(inviter_user_id: int, invited_user_id: int) -> dict:
     data['inviter_user_id'] = inviter.user
     data['invited_user_id'] = invited.user
     return data
+
 
 @catch_error("ERR_CHANGE_SCRIPT_STATUS")
 def change_script_status(key, is_active: bool) -> dict:
@@ -145,7 +145,6 @@ def change_status_referral_by_id(referral_id: int, status: bool) -> dict | None:
     ref.save()
 
     return model_to_dict(ref, fields=['inviter', 'invited', 'used', 'created_at'])
-
 
 
 @catch_error("ERR_GET_REFERRAL_INVITERS")
