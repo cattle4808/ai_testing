@@ -27,6 +27,7 @@ class HistoreState(StatesGroup):
     button = State()
     page = State()
     scripts = State()
+    detail = State()
 
 
 def format_scripts_text(scripts: list) -> str:
@@ -37,11 +38,25 @@ def format_scripts_text(scripts: list) -> str:
         text += (
             f"🆔 <code>{s['key']}</code>\n"
             f"📜 {s['script']}\n"
-            f"⏱ {start} - {stop}\n"  
+            f"⏱ {start} - {stop}\n"
             f"{'💰 Оплачено' if s['is_active'] else '🚫 Не оплачено'}\n"
             f"_____________\n\n"
         )
     return text
+
+
+def create_back_to_scripts_keyboard():
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🔙 Назад к списку",
+                    callback_data="back_to_scripts_list"
+                )
+            ]
+        ]
+    )
 
 
 async def render_sessions_page(message: types.Message, scripts: list, page: int):
@@ -129,6 +144,97 @@ async def handle_scripts_page(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
+@user_history.callback_query(F.data.startswith("script_detail_"))
+async def script_detail(callback: types.CallbackQuery, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state != HistoreState.button:
+        await callback.answer("⚠️ Сессия истекла", show_alert=True)
+        return
+
+    try:
+        script_id = int(callback.data.split("_")[-1])
+    except (ValueError, IndexError):
+        await callback.answer("❌ Неверный ID скрипта")
+        return
+
+    data = await state.get_data()
+    scripts = data.get("scripts", [])
+
+    script = next((s for s in scripts if s.get('id') == script_id), None)
+    if not script:
+        await callback.answer("❌ Скрипт не найден")
+        return
+
+    await state.update_data(current_script=script)
+    await state.set_state(HistoreState.detail)
+
+    start = parse_dt(script["start_at"])
+    stop = parse_dt(script["stop_at"])
+
+    detail_text = (
+        f"<b>📋 Детали сессии</b>\n\n"
+        f"🆔 <b>Ключ:</b> <code>{script['key']}</code>\n"
+        f"📜 <b>Скрипт:</b> {script['script']}\n"
+        f"⏱ <b>Начало:</b> {start}\n"
+        f"⏱ <b>Конец:</b> {stop}\n"
+        f"📊 <b>Статус:</b> {'✅ Оплачено и активно' if script['is_active'] else '❌ Не оплачено'}\n"
+    )
+
+    if script['is_active']:
+        detail_text += f"\n🔗 <b>Ссылка на решение:</b>\n{settings.GET_SCRIPT_URL}/{script['script']}\n"
+        detail_text += f"\n💡 <b>Как использовать:</b>\nПерейдите по ссылке в указанное время работы скрипта."
+    else:
+        detail_text += f"\n⚠️ <b>Внимание:</b> Скрипт не активен. Возможно, платеж не был подтвержден."
+
+    await callback.message.answer(
+        detail_text,
+        reply_markup=create_back_to_scripts_keyboard(),
+        parse_mode="HTML"
+    )
+
+    await callback.answer()
+
+
+@user_history.callback_query(F.data == "back_to_scripts_list")
+async def back_to_scripts_list(callback: types.CallbackQuery, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state != HistoreState.detail:
+        await callback.answer("⚠️ Неверное состояние", show_alert=True)
+        return
+
+    try:
+        await callback.message.delete()
+    except:
+        pass
+
+    await state.set_state(HistoreState.button)
+
+    data = await state.get_data()
+    scripts = data.get("scripts", [])
+    page = data.get("page", 0)
+
+    if not scripts:
+        await callback.message.answer("❗️ У вас нет активных сессий")
+        await state.clear()
+        return
+
+    per_page = 5
+    total_pages = math.ceil(len(scripts) / per_page)
+    start_idx = page * per_page
+    end_idx = start_idx + per_page
+    current = scripts[start_idx:end_idx]
+
+    text = format_scripts_text(current)
+
+    await callback.message.answer(
+        text,
+        reply_markup=inline_history.get_page_keyboard_sessions_history(page + 1, total_pages, current),
+        parse_mode="HTML"
+    )
+
+    await callback.answer()
+
+
 @user_history.callback_query(F.data == "scripts_page_1")
 async def refresh_scripts(callback: types.CallbackQuery, state: FSMContext):
     current_state = await state.get_state()
@@ -162,44 +268,6 @@ async def refresh_scripts(callback: types.CallbackQuery, state: FSMContext):
             raise
 
     await callback.answer("🔄 Обновлено")
-
-
-@user_history.callback_query(F.data.startswith("script_detail_"))
-async def script_detail(callback: types.CallbackQuery, state: FSMContext):
-    current_state = await state.get_state()
-    if current_state != HistoreState.button:
-        await callback.answer("⚠️ Сессия истекла", show_alert=True)
-        return
-
-    try:
-        script_id = int(callback.data.split("_")[-1])
-    except (ValueError, IndexError):
-        await callback.answer("❌ Неверный ID скрипта")
-        return
-
-    data = await state.get_data()
-    scripts = data.get("scripts", [])
-
-    script = next((s for s in scripts if s.get('id') == script_id), None)
-    if not script:
-        await callback.answer("❌ Скрипт не найден")
-        return
-
-    start = parse_dt(script["start_at"])
-    stop = parse_dt(script["stop_at"])
-
-    detail_text = (
-        f"<b>📋 Детали сессии</b>\n\n"
-        f"🆔 <b>ID:</b> <code>{script['key']}</code>\n"
-        f"📜 <b>Скрипт:</b> {script['script']}\n"
-        f"⏱ <b>Время:</b> {start} - {stop}\n"
-        f"💰 <b>Статус:</b> {'Оплачено' if script['is_active'] else 'Не оплачено'}\n"
-    )
-
-    if script['is_active']:
-        detail_text += f"\n🔗 <b>Ссылка:</b> {settings.GET_SCRIPT_URL}/{script['script']}"
-
-    await callback.answer(detail_text, show_alert=True)
 
 
 @user_history.callback_query(F.data == "current_page")
