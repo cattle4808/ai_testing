@@ -40,20 +40,23 @@ def back_support():
         ]
     )
 
-def send_or_receive_payment(key) -> InlineKeyboardMarkup:
+def send_or_receive_payment(redis_key) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="📤 Отправить на проверку",
-                    callback_data=f"send_pay:{key}",
+                    callback_data=f"send_pay:{redis_key}",
                 )
             ],
             [
                 InlineKeyboardButton(
                     text="📥 заново отправить чек",
-                    callback_data=f"resend_pay:{key}",
+                    callback_data=f"resend_pay:{redis_key}",
                 )
+            ],
+            [
+                InlineKeyboardButton(text='❌Отменить', callback_data=f'cancel_payment:{redis_key}')
             ]
         ]
     )

@@ -21,7 +21,11 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
     referrals_bonus_count = raw_data.get("referrals_count")
 
     if referrals_bonus_count:
-        await sync_to_async(operations.change_status_referrals)(raw_data.get("user_id"), True)
+        for _ in referrals_bonus_count:
+            await sync_to_async(operations.change_status_referral_by_id)(
+                referral_id=_.get("id"),
+                status=True
+            )
 
     user_message_text = (
         f"✅ Оплата подтверждена\n\n"
@@ -88,6 +92,14 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
     redis_key = callback.data.split("deny_payment_from_admin:")[1]
     raw_data = json.loads(await redis.get(f"buy_script:{redis_key}"))
     key = raw_data.get("key")
+
+    referrals_bonus_count = raw_data.get("referrals_count")
+    if referrals_bonus_count:
+        for _ in referrals_bonus_count:
+            await sync_to_async(operations.change_status_referral_by_id)(
+                referral_id=_.get("id"),
+                status=False
+            )
 
     user_message_text = (
         f"❌ Оплата отклонена\n\n"

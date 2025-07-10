@@ -113,9 +113,30 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
 @user_callback.callback_query(F.data.regexp(r"^cancel_payment:(.+)$"))
 async def cancel_payment(callback: types.CallbackQuery):
     redis_key = callback.data.split("cancel_payment:")[1]
+
+    raw_data = await redis.get(f"buy_script:{redis_key}")
+    if not raw_data:
+        return
+
+    data = json.loads(raw_data)
+
+    for msg_key in ("payment_msg_id", "send_payment_msg_id"):
+        msg_id = data.get(msg_key)
+        if msg_id:
+            try:
+                await bot.delete_message(chat_id=data.get("user_id"), message_id=msg_id)
+            except:
+                pass
+
     await redis.delete(f"buy_script:{redis_key}")
-    await callback.message.delete()
-    await callback.message.answer("Оплата отменена")
+
+    try:
+        await callback.message.delete()
+    except:
+        pass
+
+    await callback.message.answer("❌ <b>Оплата отменена</b>", parse_mode="HTML")
+
 
 
 
@@ -134,17 +155,29 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
 
     data = json.loads(raw_data)
 
+    referral_list = data.get("referrals_count")
+    if referral_list:
+        for ref in referral_list:
+            await sync_to_async(operations.change_status_referral_by_id)(
+                referral_id=ref.get("id"),
+                status=False
+            )
+
     admins = await sync_to_async(operations.get_admins)()
 
     _admins_dict = {}
 
+    user_id = data.get('user_id')
+    user_info = await bot.get_chat(user_id)
+    username = user_info.username or "скрыт"
+
     caption = (
-        f"User_id: {data.get('user_id')}\n"
-        f"user_name: {(await bot.get_chat(data.get('user_id'))).username or 'скрыт'}\n"
-        f"🆔: <code>{data.get('key')}</code>\n\n"
-        f"сумма: <b>{data.get('payment_sum')}</b>\n"
-        f"start_at: <code>{data.get('start_at')}</code>\n"
-        f"stop_at: <code>{data.get('stop_at')}</code>\n"
+        f"👤 <b>User ID:</b> <code>{user_id}</code>\n"
+        f"🔗 <b>Username:</b> @{username if username != 'скрыт' else 'скрыт'}\n"
+        f"🆔 <b>Ключ:</b> <code>{data.get('key')}</code>\n"
+        f"💰 <b>Сумма:</b> {data.get('payment_sum')} сум\n"
+        f"⏱ <b>Начало:</b> <code>{data.get('start_at')}</code>\n"
+        f"⏳ <b>Конец:</b> <code>{data.get('stop_at')}</code>"
     )
 
     for admin in admins:
@@ -161,15 +194,20 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
     data["admins"] = _admins_dict
     await redis.set(f"buy_script:{redis_key}", json.dumps(data))
 
+    try:
+        await bot.edit_message_reply_markup(
+            chat_id=callback.from_user.id,
+            message_id=callback.message.message_id,
+            reply_markup=None,
+        )
+    except:
+        pass
 
-    await bot.edit_message_reply_markup(
-        chat_id=callback.from_user.id,
-        message_id=callback.message.message_id,
-        reply_markup=None,
-        # parse_mode="HTML"
+    await callback.message.answer(
+        "🔎 <b>Платёж отправлен на проверку</b>\n\n"
+        "Пожалуйста, подождите — администратор проверит чек и подтвердит активацию.",
+        parse_mode="HTML"
     )
-
-    await callback.message.answer("Проверка... Подопждите идет проверка")
 
 @user_callback.callback_query(F.data.regexp(r"resend_pay:(.+)$"))
 async def recheck_pay(callback: types.CallbackQuery, state: FSMContext):

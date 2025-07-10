@@ -16,7 +16,9 @@ state_user = Router()
 async def get_payment_img(message: types.Message, state: FSMContext):
     try:
         await message.delete()
-    except: pass
+    except:
+        pass
+
     redis_data = await state.get_data()
     redis_key = redis_data.get("redis_key")
 
@@ -31,17 +33,17 @@ async def get_payment_img(message: types.Message, state: FSMContext):
 
     payment_msg_id = data.get("payment_msg_id")
 
-    await bot.edit_message_reply_markup(
-        chat_id=message.from_user.id,
-        message_id=payment_msg_id,
-        reply_markup=None,
-        # parse_mode = "HTML"
-    )
+    try:
+        await bot.edit_message_reply_markup(
+            chat_id=message.from_user.id,
+            message_id=payment_msg_id,
+            reply_markup=None
+        )
+    except:
+        pass
 
     photo = message.photo[-1]
     file_id = photo.file_id
-
-
 
     await state.set_state(UserPaymentCheck.waiting_for_accept)
 
@@ -50,10 +52,12 @@ async def get_payment_img(message: types.Message, state: FSMContext):
 
     await state.set_state(UserPaymentCheck.waiting_for_accept)
 
-    caption = (f"🆔: <code>{data.get('key')}</code>\n\n"
-               f"start_at: <code>{data.get('start_at')}</code>\n"
-               f"stop_at: <code>{data.get('stop_at')}</code>\n\n"
-               f"payment_sum: <code>{data.get('payment_sum')}</code>\n\n")
+    caption = (
+        f"🆔 <code>{data.get('key')}</code>\n"
+        f"⏱ <b>Начало:</b> <code>{data.get('start_at')}</code>\n"
+        f"⏳ <b>Конец:</b> <code>{data.get('stop_at')}</code>\n\n"
+        f"💰 <b>Сумма:</b> <code>{data.get('payment_sum')}</code> сум"
+    )
 
     msg =await bot.send_photo(
         chat_id=message.from_user.id,
@@ -70,7 +74,14 @@ async def get_payment_img(message: types.Message, state: FSMContext):
 
 @state_user.message(UserPaymentCheck.waiting_for_img)
 async def handle_not_photo(message: types.Message):
-    await message.answer("❌ Это не фото. Пожалуйста, пришли именно изображение.")
+    try:
+        await message.delete()
+    except:
+        pass
 
-
+    await message.answer(
+        "❌ <b>Нужно отправить именно фото</b>\n\n"
+        "Пожалуйста, прикрепи <u>скриншот или фото чека</u> как изображение, а не файл.",
+        parse_mode="HTML"
+    )
 
