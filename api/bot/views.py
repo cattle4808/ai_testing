@@ -94,5 +94,40 @@ async def create_script_view(request):
         return JsonResponse({"error": "ERR_CREATE_SCRIPT"}, status=500)
 
 
+@csrf_exempt
+async def change_time(request):
+    if request.method != "POST":
+        raise Http404()
+
+    try:
+        payload = json.loads(request.body)
+        start_str = payload.get("start")
+        end_str = payload.get("end")
+        tg_user_id = payload.get("user_id")
+        init_data = payload.get("initData")
+        key = payload.get("key")
+
+        if not all([start_str, end_str, tg_user_id, key, init_data]):
+            return JsonResponse({"err": True, "msg": "Некорректные данные"}, status=400)
+
+        if not TelegramWebAppValidator.is_safe(settings.BOT_TOKEN, init_data):
+            return JsonResponse({"err": True, "msg": "Проверка подписи не пройдена"}, status=403)
+
+        start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
+        stop_at = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
+
+        await sync_to_async(operations.update_script_time)(key, start_at, stop_at)
+
+        return JsonResponse({"success": True})
+
+    except Exception as e:
+        print(f"[ERR_CHANGE_TIME] {e}")
+        traceback.print_exc()
+        return JsonResponse({"err": True, "msg": str(e)}, status=500)
+
+
 def select_time(request):
     return render(request, 'time_select/create_script.html')
+
+def redact_time(request):
+    return render(request, 'time_select/redact_time.html')

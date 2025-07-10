@@ -183,6 +183,44 @@ def get_script_by_id(script_id: int) -> dict:
     except models.IdScript.DoesNotExist:
         return
 
+@catch_error("ERR_GET_SCRIPT_BY_KEY")
+def get_script_by_key(script: str) -> dict:
+    try:
+        script = models.IdScript.objects.get(key=script)
+        return model_to_dict(script, fields=[
+            'id', 'script', 'key', 'script_type', 'fingerprint',
+            'start_at', 'stop_at', 'is_active', 'used',
+            'max_usage', 'first_activate', 'first_seen'
+        ])
+    except models.IdScript.DoesNotExist:
+        return
+
+
+@catch_error("ERR_UPDATE_SCRIPT_TIME")
+def update_script_time(key: str, start_at: datetime, stop_at: datetime) -> dict | None:
+    try:
+        script = models.IdScript.objects.get(key=key)
+
+        if not script.is_active:
+            return
+
+        if script.fingerprint:
+            return
+
+        script.start_at = start_at
+        script.stop_at = stop_at
+        script.save()
+
+        return model_to_dict(script, fields=[
+            'id', 'script', 'key', 'script_type', 'fingerprint',
+            'start_at', 'stop_at', 'is_active', 'used',
+            'max_usage', 'first_activate', 'first_seen'
+        ])
+
+    except models.IdScript.DoesNotExist:
+        return
+
+
 @catch_error("ERR_GET_REFERRALS_COUNTS")
 def get_referrals_counts(user_id: int) -> dict:
     referrals = models.Referral.objects.filter(inviter__user=user_id)
