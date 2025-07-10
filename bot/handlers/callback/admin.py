@@ -46,6 +46,23 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
         parse_mode="HTML"
     )
 
+    testing_script_name = f"testing_{raw_data.get('script')}"
+    testing_script = await sync_to_async(operations.create_testing_script)(testing_script_name)
+    testing_block = (
+        f"🧪 <b>Тестовое решение:</b>\n"
+        f"🆔: <code>{testing_script.get('key')}</code>\n"
+        f"⏱️ Срок действия: <code>{testing_script.get('start_at')}</code> — <code>{testing_script.get('stop_at')}</code>\n"
+        f"🔗 <b>Ссылка:</b> {settings.GET_SCRIPT_URL}/{testing_script.get('script')}\n\n"
+        f"Можно использовать для предварительной проверки работы системы и интерфейса."
+    )
+
+    await bot.send_message(
+        chat_id=raw_data.get("user_id"),
+        text=testing_block,
+        parse_mode="HTML"
+    )
+
+
     chat = await bot.get_chat(raw_data.get('user_id'))
     user_name = chat.username or 'скрыт'
 

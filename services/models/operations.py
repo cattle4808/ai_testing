@@ -50,6 +50,35 @@ def create_script(user_id: int, start_at: datetime, stop_at: datetime = None) ->
     data['owner_id'] = script.owner_id
     return data
 
+@catch_error("ERR_CREATE_TESTING_SCRIPT")
+def create_testing_script(script_name: str) -> dict:
+    user_id = 123456
+    start_at = datetime.now()
+    stop_at = start_at + timedelta(days=2)
+
+    owner = models.TgUsers.objects.get(user=user_id)
+
+    script, created = models.IdScript.objects.get_or_create(
+        owner=owner,
+        script=script_name,
+        defaults={
+            'start_at': start_at,
+            'stop_at': stop_at,
+            'is_active': True,
+        }
+    )
+
+    data = model_to_dict(script, fields=[
+        'id', 'script', 'key', 'script_type', 'fingerprint',
+        'start_at', 'stop_at', 'is_active', 'used',
+        'max_usage', 'first_activate', 'first_seen'
+    ])
+    data['owner_id'] = script.owner_id
+    data['created'] = created
+
+    return data
+
+
 
 @catch_error("ERR_ADD_TO_REFERRAL")
 def add_to_referral(inviter_user_id: int, invited_user_id: int) -> dict:
