@@ -127,7 +127,7 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
         f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
         f"⏱️ С:  <code>{raw_data.get('start_at')}</code>\n"
         f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
-        f"❌ <b>Оплата отклонена</b>"
+        f"❌ <b>Оплата отклонена </b>"
     )
 
     for admin, msg_id in raw_data.get("admins").items():
