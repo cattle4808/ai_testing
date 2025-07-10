@@ -106,7 +106,7 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
 
     data["payment_msg_id"] = msg.message_id
     data["payment_sum"] = payment_sum
-    data["referrals_count"] = referrals_count
+    data["referrals_count"] = referrals_list
     await redis.set(f"buy_script:{redis_key}", json.dumps(data))
 
 
