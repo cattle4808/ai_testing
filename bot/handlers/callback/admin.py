@@ -43,7 +43,7 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
             message_id=msg_id,
             caption=(
                 f"User_id: {raw_data.get('user_id')}\n",
-                f"user_name: {await bot.get_chat(raw_data.get('user_id')).username}\n"
+                f"user_name: {bot.get_chat(raw_data.get('user_id')).username}\n"
                 f"🆔: <code>{raw_data.get('key')}</code>\n\n"
                 f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
                 f"⏱️ С: <code>{raw_data.get('start_at')}</code>\n"
@@ -95,7 +95,7 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
             message_id=msg_id,
             caption=(
                 f"User_id: {raw_data.get('user_id')}\n",
-                f"user_name: {await bot.get_chat(raw_data.get('user_id')).username}\n"
+                f"user_name: {bot.get_chat(raw_data.get('user_id')).username}\n"
                 f"🆔: <code>{raw_data.get('key')}</code>\n\n"
                 f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
                 f"⏱️ С:  <code>{raw_data.get('start_at')}</code>\n"
