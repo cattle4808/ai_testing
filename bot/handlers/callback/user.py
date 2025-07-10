@@ -155,6 +155,8 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
         reply_markup=None
     )
 
+    await callback.message.answer("Проверка... Подопждите идет проверка")
+
 @user_callback.callback_query(F.data.regexp(r"resend_pay:(.+)$"))
 async def recheck_pay(callback: types.CallbackQuery, state: FSMContext):
     redis_key = callback.data.split("recheck_pay:")[1]
