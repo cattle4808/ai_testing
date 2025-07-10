@@ -429,16 +429,14 @@ async def handle_deactivate_script(callback: types.CallbackQuery):
 
     if result.get('success'):
         await callback.answer("⏸️ Скрипт деактивирован", show_alert=True)
-        # Обновляем отображение
         await handle_script_detail(callback)
     else:
         error_msg = result.get('error', 'Неизвестная ошибка')
         await callback.answer(f"❌ Ошибка деактивации: {error_msg}", show_alert=True)
 
-# Обработчик копирования ключа
 @user_history.callback_query(F.data.startswith("copy_key_"))
 async def handle_copy_key(callback: types.CallbackQuery):
-    """Обработка копирования ключа скрипта"""
+    """ копирования ключа скрипта"""
     script_id = int(callback.data.split("_")[-1])
 
     script = await sync_to_async(get_script_by_id)(script_id)

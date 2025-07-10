@@ -14,7 +14,12 @@ from services.models import operations
 user_callback = Router()
 
 @user_callback.callback_query(F.data == "faq")
-async def show_faq(callback: types.CallbackQuery):
+async def show_faq(callback: types.CallbackQuery, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state:
+        await callback.answer("⚠️ Завершите текущую операцию", show_alert=True)
+        return
+
     await callback.answer()
 
     text = (
@@ -65,7 +70,10 @@ async def support(callback: types.CallbackQuery):
 
 @user_callback.callback_query(F.data.regexp(r"^buy_script:(.+)$"))
 async def buy(callback: types.CallbackQuery, state: FSMContext):
-    await callback.message.delete()
+    try:
+        await callback.message.delete()
+    except Exception as e:
+        print(e)
 
     redis_key = callback.data.split("buy_script:")[1]
     raw_data = await redis.get(f"buy_script:{redis_key}")
@@ -112,6 +120,7 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
 
 @user_callback.callback_query(F.data.regexp(r"^cancel_payment:(.+)$"))
 async def cancel_payment(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
     redis_key = callback.data.split("cancel_payment:")[1]
 
     raw_data = await redis.get(f"buy_script:{redis_key}")
@@ -148,6 +157,7 @@ async def cancel_payment(callback: types.CallbackQuery, state: FSMContext):
         )
     except:
         pass
+
     await state.clear()
     await redis.delete(f"buy_script:{redis_key}")
 
@@ -166,6 +176,7 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
     raw_data = await redis.get(f"buy_script:{redis_key}")
 
     if not raw_data:
+        await state.clear()
         return
 
     data = json.loads(raw_data)

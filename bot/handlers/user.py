@@ -18,14 +18,23 @@ from services.models import refferal
 user = Router()
 @user.message(F.text == CommandMap.User.BUY_SCRIPT)
 async def buy_script(message: types.Message, state: FSMContext):
-    # state_name = await state.get_state()
-    # if state_name == UserPaymentCheck.waiting_for_img:
-    #     try:
-    #         await message.delete()
-    #     except:
-    #         pass
-    #     await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
-    #     return
+    state_name = await state.get_state()
+    if state_name == UserPaymentCheck.waiting_for_img:
+        try:
+            await message.delete()
+        except:
+            pass
+
+        redis_data = await state.get_data()
+        redis_key = redis_data.get("redis_key")
+
+        await message.answer(
+            "⛔ Сначала завершите текущую оплату — отправьте фото чека.\n"
+            f"Или отмените оплату",
+            reply_markup=user_inline.cancel_keyboard(redis_key)
+        )
+        return
+
     await message.answer(
         "<b>💼 Покупка решения — быстро и надёжно</b>\n\n"
         "<b>1️⃣ Выберите дату и время теста</b>\n"
@@ -45,14 +54,22 @@ async def buy_script(message: types.Message, state: FSMContext):
 
 @user.message(F.text == CommandMap.User.MY_DATA)
 async def my_referrals(message: types.Message, state: FSMContext):
-    # state_name = await state.get_state()
-    # if state_name == UserPaymentCheck.waiting_for_img:
-    #     try:
-    #         await message.delete()
-    #     except:
-    #         pass
-    #     await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
-    #     return
+    state_name = await state.get_state()
+    if state_name == UserPaymentCheck.waiting_for_img:
+        try:
+            await message.delete()
+        except:
+            pass
+
+        redis_data = await state.get_data()
+        redis_key = redis_data.get("redis_key")
+
+        await message.answer(
+            "⛔ Сначала завершите текущую оплату — отправьте фото чека.\n"
+            f"Или отмените оплату",
+            reply_markup=user_inline.cancel_keyboard(redis_key)
+        )
+        return
 
     user_id = message.from_user.id
 
@@ -85,14 +102,23 @@ async def my_referrals(message: types.Message, state: FSMContext):
 
 @user.message(F.text == CommandMap.User.INSTRUCTION)
 async def instruction(message: types.Message, state: FSMContext):
-    # state_name = await state.get_state()
-    # if state_name == UserPaymentCheck.waiting_for_img:
-    #     try:
-    #         await message.delete()
-    #     except:
-    #         pass
-    #     await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
-    #     return
+    state_name = await state.get_state()
+    if state_name == UserPaymentCheck.waiting_for_img:
+        try:
+            await message.delete()
+        except:
+            pass
+
+        redis_data = await state.get_data()
+        redis_key = redis_data.get("redis_key")
+
+        await message.answer(
+            "⛔ Сначала завершите текущую оплату — отправьте фото чека.\n"
+            f"Или отмените оплату",
+            reply_markup=user_inline.cancel_keyboard(redis_key)
+        )
+        return
+
     await message.answer("Инструкция")
     await message.answer("В разработке ...")
 
@@ -105,7 +131,15 @@ async def support(message: types.Message, state: FSMContext):
             await message.delete()
         except:
             pass
-        await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
+
+        redis_data = await state.get_data()
+        redis_key = redis_data.get("redis_key")
+
+        await message.answer(
+            "⛔ Сначала завершите текущую оплату — отправьте фото чека.\n"
+            f"Или отмените оплату",
+            reply_markup=user_inline.cancel_keyboard(redis_key)
+        )
         return
 
     await message.answer(
@@ -122,14 +156,22 @@ async def support(message: types.Message, state: FSMContext):
 
 @user.message(F.text == CommandMap.User.MY_SCRIPTS)
 async def my_shops(message: types.Message, state: FSMContext):
-    # state_name = await state.get_state()
-    # if state_name == UserPaymentCheck.waiting_for_img:
-    #     try:
-    #         await message.delete()
-    #     except:
-    #         pass
-    #     await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
-    #     return
+    state_name = await state.get_state()
+    if state_name == UserPaymentCheck.waiting_for_img:
+        try:
+            await message.delete()
+        except:
+            pass
+
+        redis_data = await state.get_data()
+        redis_key = redis_data.get("redis_key")
+
+        await message.answer(
+            "⛔ Сначала завершите текущую оплату — отправьте фото чека.\n"
+            f"Или отмените оплату",
+            reply_markup=user_inline.cancel_keyboard(redis_key)
+        )
+        return
 
     user_id = message.from_user.id
 
