@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
+from django.conf import settings
 
 def history_my_scripts():
     return InlineKeyboardMarkup(
@@ -71,10 +71,17 @@ def get_page_keyboard_sessions_history(current_page: int, total_pages: int, scri
     return builder.as_markup()
 
 
-def get_detail_keyboard():
+def get_detail_keyboard(script_key: str):
     from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
     return InlineKeyboardMarkup(
         inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Изменить время;)",
+                    web_app={"url": f"{settings.WEB_APP_REDACT_TIME_URL}?key={script_key}"},
+                    callback_data=f"change_time:{script_key}"
+                )
+            ],
             [
                 InlineKeyboardButton(
                     text="🔙 Назад к списку",

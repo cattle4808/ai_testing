@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
+from django.conf import settings
 
 def cancel_keyboard(redis_key):
     return InlineKeyboardMarkup(
@@ -14,7 +14,7 @@ def select_time():
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text='📅Выбрать время', web_app={"url": "https://jjks.site/api/bot/select_time/"})
+                InlineKeyboardButton(text='📅Выбрать время', web_app={"url": settings.WEB_APP_SELECT_TIME_URL})
             ]
         ]
     )
