@@ -86,6 +86,7 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
             parse_mode="HTML",
             reply_markup=None
         )
+
     await bot.delete_message(
         chat_id=raw_data.get("user_id"),
         message_id=raw_data.get("payment_msg_id")
