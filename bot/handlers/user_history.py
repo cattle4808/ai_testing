@@ -14,6 +14,12 @@ from services.models import operations
 user_history = Router()
 
 
+def parse_dt(val: str):
+    try:
+        return datetime.fromisoformat(val)
+    except Exception:
+        return val
+
 # @user_history.message(CommandMap.User.MY_SCRIPTS)
 # async def my_scripts(message: types.Message, state: FSMContext):
 #
@@ -92,11 +98,12 @@ async def paginate_sessions(callback: types.CallbackQuery, state: FSMContext):
 
     text = "<b>Ваши сессии:</b>\n\n"
     for s in current:
-        formatted_time = f"{s['start_at']} -  {s['stop_at']}"
+        start = parse_dt(s["start_at"])
+        stop = parse_dt(s["stop_at"])
         text += (
             f" <code>{s['key']}</code>\n"
             f"📜 {s['script']}\n"
-            f"⏱ {formatted_time}\n"
+            f"⏱ {start} - {start}\n"
             f"{'💰 Оплачено' if s['is_paid'] else '🚫 Не оплачено'}\n"
             f"_____________\n\n"
         )
