@@ -106,5 +106,10 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
         chat_id=raw_data.get("user_id"),
         message_id=raw_data.get("payment_msg_id")
     )
+
+    await bot.delete_message(
+        chat_id=raw_data.get("user_id"),
+        message_id=raw_data.get("payment_msg_id")
+    )
     await state.clear()
     await redis.delete(f"buy_script:{redis_key}")
