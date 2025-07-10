@@ -107,7 +107,7 @@ def change_script_status(key, is_active: bool) -> dict:
 
 @catch_error("ERR_GET_MY_SCRIPTS")
 def get_my_scripts(user_id: int) -> list:
-    scripts = models.IdScript.objects.filter(owner_id=user_id)
+    scripts = models.IdScript.objects.filter(owner__user=user_id)
     return [model_to_dict(script, fields=[
         'id', 'script', 'key', 'script_type', 'fingerprint',
         'start_at', 'stop_at', 'is_active', 'used',
