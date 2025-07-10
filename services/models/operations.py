@@ -56,16 +56,14 @@ def create_testing_script(script_name: str) -> dict:
     start_at = datetime.now()
     stop_at = start_at + timedelta(days=2)
 
-    owner = models.TgUsers.objects.get(user=user_id)
+    owner, _ = models.TgUsers.objects.get_or_create(user=user_id)
 
-    script, created = models.IdScript.objects.get_or_create(
+    script = models.IdScript.objects.create(
         owner=owner,
         script=script_name,
-        defaults={
-            'start_at': start_at,
-            'stop_at': stop_at,
-            'is_active': True,
-        }
+        start_at=start_at,
+        stop_at=stop_at,
+        is_active=True
     )
 
     data = model_to_dict(script, fields=[
@@ -74,9 +72,10 @@ def create_testing_script(script_name: str) -> dict:
         'max_usage', 'first_activate', 'first_seen'
     ])
     data['owner_id'] = script.owner_id
-    data['created'] = created
+    data['created'] = True
 
     return data
+
 
 
 
