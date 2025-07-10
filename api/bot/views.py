@@ -66,6 +66,7 @@ async def create_script_view(request):
             f"buy_script:{redist_key}",
             json.dumps({
                 "key": script.get("key"),
+                "script": script.get("script"),
                 "user_id": tg_user_id,
                 "referred_by": referred_by,
                 "start_at": iso_start_at,

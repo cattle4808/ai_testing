@@ -117,6 +117,7 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
         f"⏱️ С: <code>{raw_data.get('start_at')}</code>\n"
         f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
     )
+
     await bot.send_photo(
         chat_id=raw_data.get("user_id"),
         photo=raw_data.get("file_id"),
