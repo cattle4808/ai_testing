@@ -37,19 +37,21 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
         parse_mode="HTML"
     )
 
+    caption = (
+        f"User_id: {raw_data.get('user_id')}\n",
+        f"user_name: {(await bot.get_chat(raw_data.get('user_id')).username) or 'скрыт'}\n"
+        f"🆔: <code>{raw_data.get('key')}</code>\n\n"
+        f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
+        f"⏱️ С: <code>{raw_data.get('start_at')}</code>\n"
+        f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
+        f"✅ <b>Оплата подтверждена</b>"
+    )
+
     for admin, msg_id in raw_data.get("admins").items():
         await bot.edit_message_caption(
             chat_id=int(admin),
             message_id=msg_id,
-            caption=(
-                f"User_id: {raw_data.get('user_id')}\n",
-                f"user_name: {(await bot.get_chat(raw_data.get('user_id'))).username or 'скрыт'}\n"
-                f"🆔: <code>{raw_data.get('key')}</code>\n\n"
-                f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
-                f"⏱️ С: <code>{raw_data.get('start_at')}</code>\n"
-                f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
-                f"✅ <b>Оплата подтверждена</b>"
-            ),
+            caption=caption,
             reply_markup=None,
             parse_mode="HTML"
         )
@@ -89,19 +91,21 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
         parse_mode="HTML"
     )
 
+    caption = (
+        f"User_id: {raw_data.get('user_id')}\n"
+        f"user_name: {(await bot.get_chat(raw_data.get('user_id'))).username or 'скрыт'}\n"
+        f"🆔: <code>{raw_data.get('key')}</code>\n\n"
+        f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
+        f"⏱️ С:  <code>{raw_data.get('start_at')}</code>\n"
+        f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
+        f"❌ <b>Оплата отклонена</b>"
+    )
+
     for admin, msg_id in raw_data.get("admins").items():
         await bot.edit_message_caption(
             chat_id=int(admin),
             message_id=msg_id,
-            caption=(
-                f"User_id: {raw_data.get('user_id')}\n",
-                f"user_name: {(await bot.get_chat(raw_data.get('user_id'))).username or 'скрыт'}\n"
-                f"🆔: <code>{raw_data.get('key')}</code>\n\n"
-                f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
-                f"⏱️ С:  <code>{raw_data.get('start_at')}</code>\n"
-                f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
-                f"❌ <b>Оплата отклонена</b>"
-            ),
+            caption=caption,
             parse_mode="HTML",
             reply_markup=None
         )
