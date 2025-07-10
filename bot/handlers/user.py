@@ -18,14 +18,14 @@ from services.models import refferal
 user = Router()
 @user.message(F.text == CommandMap.User.BUY_SCRIPT)
 async def buy_script(message: types.Message, state: FSMContext):
-    state_name = await state.get_state()
-    if state_name == UserPaymentCheck.waiting_for_img:
-        try:
-            await message.delete()
-        except:
-            pass
-        await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
-        return
+    # state_name = await state.get_state()
+    # if state_name == UserPaymentCheck.waiting_for_img:
+    #     try:
+    #         await message.delete()
+    #     except:
+    #         pass
+    #     await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
+    #     return
     await message.answer(
         "<b>💼 Покупка решения — быстро и надёжно</b>\n\n"
         "<b>1️⃣ Выберите дату и время теста</b>\n"
@@ -45,14 +45,14 @@ async def buy_script(message: types.Message, state: FSMContext):
 
 @user.message(F.text == CommandMap.User.MY_DATA)
 async def my_referrals(message: types.Message, state: FSMContext):
-    state_name = await state.get_state()
-    if state_name == UserPaymentCheck.waiting_for_img:
-        try:
-            await message.delete()
-        except:
-            pass
-        await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
-        return
+    # state_name = await state.get_state()
+    # if state_name == UserPaymentCheck.waiting_for_img:
+    #     try:
+    #         await message.delete()
+    #     except:
+    #         pass
+    #     await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
+    #     return
 
     user_id = message.from_user.id
 
@@ -85,15 +85,16 @@ async def my_referrals(message: types.Message, state: FSMContext):
 
 @user.message(F.text == CommandMap.User.INSTRUCTION)
 async def instruction(message: types.Message, state: FSMContext):
-    state_name = await state.get_state()
-    if state_name == UserPaymentCheck.waiting_for_img:
-        try:
-            await message.delete()
-        except:
-            pass
-        await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
-        return
+    # state_name = await state.get_state()
+    # if state_name == UserPaymentCheck.waiting_for_img:
+    #     try:
+    #         await message.delete()
+    #     except:
+    #         pass
+    #     await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
+    #     return
     await message.answer("Инструкция")
+    await message.answer("В разработке ...")
 
 
 @user.message(F.text == CommandMap.User.SUPPORT)
@@ -121,14 +122,14 @@ async def support(message: types.Message, state: FSMContext):
 
 @user.message(F.text == CommandMap.User.MY_SCRIPTS)
 async def my_shops(message: types.Message, state: FSMContext):
-    state_name = await state.get_state()
-    if state_name == UserPaymentCheck.waiting_for_img:
-        try:
-            await message.delete()
-        except:
-            pass
-        await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
-        return
+    # state_name = await state.get_state()
+    # if state_name == UserPaymentCheck.waiting_for_img:
+    #     try:
+    #         await message.delete()
+    #     except:
+    #         pass
+    #     await message.answer("⛔ Сначала завершите текущую оплату — отправьте фото чека.")
+    #     return
 
     user_id = message.from_user.id
 

@@ -98,15 +98,21 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
             invited_user_id=raw_data.get("user_id")
         )
 
-    await bot.delete_message(
-        chat_id=raw_data.get("user_id"),
-        message_id=raw_data.get("payment_msg_id")
-    )
+    try:
+        await bot.delete_message(
+            chat_id=raw_data.get("user_id"),
+            message_id=raw_data.get("payment_msg_id")
+        )
+    except:
+        pass
 
-    await bot.delete_message(
-        chat_id=raw_data.get("user_id"),
-        message_id=raw_data.get("send_payment_msg_id")
-    )
+    try:
+        await bot.delete_message(
+            chat_id=raw_data.get("user_id"),
+            message_id=raw_data.get("send_payment_msg_id")
+        )
+    except:
+        pass
     await state.clear()
     await redis.delete(f"buy_script:{redis_key}")
 
@@ -169,14 +175,21 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
             else:
                 raise
 
-    await bot.delete_message(
-        chat_id=raw_data.get("user_id"),
-        message_id=raw_data.get("payment_msg_id")
-    )
+    try:
+        await bot.delete_message(
+            chat_id=raw_data.get("user_id"),
+            message_id=raw_data.get("payment_msg_id")
+        )
+    except:
+        pass
 
-    await bot.delete_message(
-        chat_id=raw_data.get("user_id"),
-        message_id=raw_data.get("send_payment_msg_id")
-    )
+    try:
+        await bot.delete_message(
+            chat_id=raw_data.get("user_id"),
+            message_id=raw_data.get("send_payment_msg_id")
+        )
+    except:
+        pass
+
     await state.clear()
     await redis.delete(f"buy_script:{redis_key}")

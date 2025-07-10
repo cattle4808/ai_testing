@@ -114,7 +114,7 @@ def get_my_scripts(user_id: int) -> list:
         'max_usage', 'first_activate', 'first_seen'
     ]) for script in scripts]
 
-@catch_error("ERR_GET_MY_SCRIPTS")
+@catch_error("ERR_GET_MY_SCRIPTS_WITH_PAGINATION")
 def get_my_scripts_with_pagination(user_id: int, page: int = 1, per_page: int = 5) -> dict:
     offset = (page - 1) * per_page
     queryset = models.IdScript.objects.filter(owner__user=user_id).order_by("-created_at")
@@ -185,3 +185,4 @@ def get_admins() -> list[dict]:
         model_to_dict(admin, fields=["user", "is_admin"])
         for admin in models.TgUsers.objects.filter(is_admin=True)
     ]
+
