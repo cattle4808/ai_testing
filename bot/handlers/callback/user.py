@@ -141,7 +141,10 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
         message = await callback.bot.send_photo(
             chat_id=admin_id,
             photo=data.get("file_id"),
-            caption=f"🆔: <code>{redis_key}</code>",
+            caption=f"🆔: <code>{data.get('key')}</code>\n\n"
+                    f"сумма: <b>{data.get('payment_sum')}</b>\n"
+                    f"start_at: <code>{data.get('start_at')}</code>\n"
+                    f"stop_at: <code>{data.get('stop_at')}</code>\n",
             reply_markup=admin_inline.check_payment(redis_key),
             parse_mode="HTML"
         )

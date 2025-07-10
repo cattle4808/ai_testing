@@ -2,6 +2,8 @@ import json
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
+from django.conf import settings
+from aiogram.utils.markdown import quote_html
 
 from services.models import operations
 from ... import redis, bot
@@ -18,22 +20,75 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
 
     change_script = await sync_to_async(operations.change_script_status)(key, True)
 
-    await bot.send_message(
-        chat_id=raw_data.get("user_id"),
-        text=f"Оплата принятат\n\n"
-             f"{change_script}"
+    user_message_text = (
+        f"✅ Оплата подтверждена\n\n"
+        f"Ваша оплата успешно получена и подтверждена.\n"
+        f"Решение будет автоматически активировано в указанный промежуток времени:\n\n"
+        f"⏱️ Начало: {change_script.get('start_at')}\n"
+        f"⏱️ Окончание: {change_script.get('stop_at')}\n\n"
+        f"🔗 Ссылка на решение:\n"
+        f"{settings.GET_SCRIPT_URL}/{change_script.get('script')}\n\n"
+        f"📌 Пожалуйста, будьте на связи в этот период — система включится автоматически."
     )
+    await bot.send_message(chat_id=raw_data.get("user_id"), text=user_message_text)
 
     for admin, msg_id in raw_data.get("admins").items():
-        print(admin)
-
         await bot.edit_message_caption(
             chat_id=int(admin),
             message_id=msg_id,
-            caption=f" {raw_data}: \n\nОплата принята",
-            reply_markup=None
+            caption=(
+                f"🆔: <code>{quote_html(raw_data.get('key'))}</code>\n\n"
+                f"💵 Сумма: <b>{quote_html(str(raw_data.get('payment_sum')))}</b>\n"
+                f"⏱️ С: <code>{quote_html(raw_data.get('start_at'))}</code>\n"
+                f"⏱️ До: <code>{quote_html(raw_data.get('stop_at'))}</code>\n\n"
+                f"✅ <b>Оплата подтверждена</b>"
+            ),
+            reply_markup=None,
+            parse_mode="HTML"
         )
+
+        await bot.delete_message(
+            chat_id=raw_data.get("user_id"),
+            message_id=raw_data.get("payment_msg_id")
+        )
+        await state.clear()
+        await redis.delete(f"buy_script:{redis_key}")
+
 
 @admin_callback.callback_query(F.data.regexp(r"deny_payment_from_admin:(.+)$"))
 async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: FSMContext):
     redis_key = callback.data.split("deny_payment_from_admin:")[1]
+    raw_data = json.loads(await redis.get(f"buy_script:{redis_key}"))
+    key = raw_data.get("key")
+
+    user_message_text = (
+        f"❌ Оплата отклонена\n\n"
+        f"К сожалению, ваша оплата не была подтверждена администратором.\n"
+        f"Если вы считаете, что произошла ошибка — свяжитесь с поддержкой или админом вручную.\n\n"
+        f"🆔: <code>{quote_html(raw_data.get('key'))}</code>\n\n"
+        f"💵 Сумма: <b>{quote_html(str(raw_data.get('payment_sum')))}</b>\n"
+        f"⏱️ С: <code>{quote_html(raw_data.get('start_at'))}</code>\n"
+        f"⏱️ До: <code>{quote_html(raw_data.get('stop_at'))}</code>\n\n"
+    )
+    await bot.send_message(chat_id=raw_data.get("user_id"), text=user_message_text)
+
+    for admin, msg_id in raw_data.get("admins").items():
+        await bot.edit_message_caption(
+            chat_id=int(admin),
+            message_id=msg_id,
+            caption=(
+                f"🆔: <code>{quote_html(raw_data.get('key'))}</code>\n\n"
+                f"💵 Сумма: <b>{quote_html(str(raw_data.get('payment_sum')))}</b>\n"
+                f"⏱️ С: <code>{quote_html(raw_data.get('start_at'))}</code>\n"
+                f"⏱️ До: <code>{quote_html(raw_data.get('stop_at'))}</code>\n\n"
+                f"❌ <b>Оплата отклонена</b>"
+            ),
+            parse_mode="HTML",
+            reply_markup=None
+        )
+    await bot.delete_message(
+        chat_id=raw_data.get("user_id"),
+        message_id=raw_data.get("payment_msg_id")
+    )
+    await state.clear()
+    await redis.delete(f"buy_script:{redis_key}")
