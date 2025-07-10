@@ -14,7 +14,7 @@ state_user = Router()
 
 @state_user.message(UserPaymentCheck.waiting_for_img, F.photo)
 async def get_payment_img(message: types.Message, state: FSMContext):
-    # await message.delete()
+    await message.delete()
     redis_data = await state.get_data()
     redis_key = redis_data.get("redis_key")
 
