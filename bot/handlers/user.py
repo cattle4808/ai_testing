@@ -1,3 +1,5 @@
+import pprint
+
 from aiogram import Router
 from aiogram import F, types
 from asgiref.sync import sync_to_async
@@ -137,8 +139,6 @@ async def my_shops(message: types.Message, state: FSMContext):
 
     my_scripts = await sync_to_async(operations.get_my_scripts)(user_id)
 
-    await message.answer(
-        str(my_scripts)
-    )
+    pprint.pprint(my_scripts, indent=4)
 
 
