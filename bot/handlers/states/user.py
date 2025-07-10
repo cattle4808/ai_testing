@@ -50,8 +50,6 @@ async def get_payment_img(message: types.Message, state: FSMContext):
     data["file_id"] = file_id
     await redis.set(f"buy_script:{redis_key}", json.dumps(data))
 
-    await state.set_state(UserPaymentCheck.waiting_for_accept)
-
     caption = (
         f"🆔 <code>{data.get('key')}</code>\n"
         f"⏱ <b>Начало:</b> <code>{data.get('start_at')}</code>\n"
