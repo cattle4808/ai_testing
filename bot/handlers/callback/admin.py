@@ -61,8 +61,9 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
 
     if raw_data.get("referred_by"):
         await sync_to_async(operations.add_to_referral)(
-            inviter_user_id=raw_data.get("user_id"),
-            invited_user_id=raw_data.get("referred_by")
+            inviter_user_id=raw_data.get("referred_by"),
+            invited_user_id=raw_data.get("user_id")
+
         )
 
     await bot.delete_message(
