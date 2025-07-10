@@ -132,9 +132,9 @@ async def handle_scripts_page(callback: types.CallbackQuery, state: FSMContext):
 @user_history.callback_query(F.data == "scripts_page_1")
 async def refresh_scripts(callback: types.CallbackQuery, state: FSMContext):
     current_state = await state.get_state()
-    if current_state != HistoreState.button:
-        await callback.answer("⚠️ Сессия истекла", show_alert=True)
-        return
+    # if current_state != HistoreState.button:
+    #     await callback.answer("⚠️ Сессия истекла", show_alert=True)
+    #     return
 
     my_scripts = await sync_to_async(operations.get_my_scripts)(callback.from_user.id)
     if not my_scripts:
