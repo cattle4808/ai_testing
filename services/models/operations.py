@@ -108,11 +108,22 @@ def change_script_status(key, is_active: bool) -> dict:
 @catch_error("ERR_GET_MY_SCRIPTS")
 def get_my_scripts(user_id: int) -> list:
     scripts = models.IdScript.objects.filter(owner__user=user_id).order_by('-created_at')
-    return [model_to_dict(script, fields=[
-        'id', 'script', 'key', 'script_type', 'fingerprint',
-        'start_at', 'stop_at', 'is_active', 'used',
-        'max_usage', 'first_activate', 'first_seen'
-    ]) for script in scripts]
+    result = []
+    for script in scripts:
+        data = model_to_dict(script, fields=[
+            'id', 'script', 'key', 'script_type', 'fingerprint',
+            'start_at', 'stop_at', 'is_active', 'used',
+            'max_usage', 'first_activate', 'first_seen'
+        ])
+
+        for field in ['start_at', 'stop_at', 'first_activate', 'first_seen']:
+            if isinstance(data.get(field), datetime):
+                data[field] = data[field].isoformat(sep=' ', timespec='seconds')
+
+        result.append(data)
+
+    return result
+
 
 @catch_error("ERR_GET_MY_SCRIPTS_WITH_PAGINATION")
 def get_my_scripts_with_pagination(user_id: int, page: int = 1, per_page: int = 5) -> dict:

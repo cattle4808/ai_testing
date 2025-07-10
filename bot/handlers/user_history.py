@@ -67,7 +67,6 @@ async def my_sessions_handler(message: types.Message, state: FSMContext):
         await message.answer("❗️ У вас нет активных сессий")
         return
 
-
     await state.update_data(scripts=my_scripts, page=0)
     await render_sessions_page(message, my_scripts, 0)
 
