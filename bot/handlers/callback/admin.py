@@ -1,5 +1,6 @@
 import json
 from aiogram import Router, F, types
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -59,19 +60,25 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
     )
 
     for admin, msg_id in raw_data.get("admins").items():
-        await bot.edit_message_caption(
-            chat_id=int(admin),
-            message_id=msg_id,
-            caption=caption,
-            reply_markup=None,
-            parse_mode="HTML"
-        )
+        try:
+            await bot.edit_message_caption(
+                chat_id=int(admin),
+                message_id=msg_id,
+                caption=caption,
+                reply_markup=None,
+                parse_mode="HTML"
+            )
+        except TelegramBadRequest as e:
+            if "message is not modified" in str(e):
+                pass
+            else:
+                raise
+
 
     if raw_data.get("referred_by"):
         await sync_to_async(operations.add_to_referral)(
             inviter_user_id=raw_data.get("referred_by"),
             invited_user_id=raw_data.get("user_id")
-
         )
 
     await bot.delete_message(
@@ -120,7 +127,7 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
     chat = await bot.get_chat(raw_data.get('user_id'))
     user_name = chat.username or 'скрыт'
 
-    caption = (
+    caption_2 = (
         f"User_id: {raw_data.get('user_id')}\n"
         f"user_name: {user_name}\n"
         f"🆔: <code>{raw_data.get('key')}</code>\n\n"
@@ -131,13 +138,20 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
     )
 
     for admin, msg_id in raw_data.get("admins").items():
-        await bot.edit_message_caption(
-            chat_id=int(admin),
-            message_id=msg_id,
-            caption=caption,
-            parse_mode="HTML",
-            reply_markup=None
-        )
+        try:
+            await bot.edit_message_caption(
+                chat_id=int(admin),
+                message_id=msg_id,
+                caption=caption_2,
+                parse_mode="HTML",
+                reply_markup=None
+            )
+        except TelegramBadRequest as e:
+            if "message is not modified" in str(e):
+                pass
+            else:
+                raise
+
 
     await bot.delete_message(
         chat_id=raw_data.get("user_id"),
