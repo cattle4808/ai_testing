@@ -140,15 +140,19 @@ async def get_payment_img(message: types.Message, state: FSMContext):
 
 
 @state_user.message(UserPaymentCheck.waiting_for_img)
-async def handle_not_photo(message: types.Message):
+async def handle_not_photo(message: types.Message, state: FSMContext):
     try:
         await message.delete()
     except:
         pass
 
+    redis_data = await state.get_data()
+    redis_key = redis_data.get("redis_key")
+
     await message.answer(
         "❌ <b>Нужно отправить именно фото</b>\n\n"
-        "Пожалуйста, прикрепи <u>скриншот или фото чека</u> как изображение, а не файл.",
-        parse_mode="HTML"
+        "Пожалуйста, прикрепи <u>скриншот или фото чека</u> как изображение.\n\n"
+        "Или же можете отменить покупку.",
+        parse_mode="HTML",
+        reply_markup=user_inline.cancel_keyboard(redis_key=redis_key) if redis_key else None
     )
-
