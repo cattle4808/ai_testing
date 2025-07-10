@@ -209,8 +209,15 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
         parse_mode="HTML"
     )
 
-@user_callback.callback_query(F.data.regexp(r"resend_pay:(.+)$"))
+@user_callback.callback_query(F.data.regexp(r"^resend_pay:(.+)$"))
 async def recheck_pay(callback: types.CallbackQuery, state: FSMContext):
-    redis_key = callback.data.split("recheck_pay:")[1]
+    redis_key = callback.data.split("resend_pay:")[1]
 
-    await callback.message.answer("Проверка...")
+    await callback.message.answer(
+        "📤 <b>Вы можете отправить новый чек</b>\n\n"
+        "Просто пришлите сюда новое фото или скриншот оплаты.",
+        parse_mode="HTML"
+    )
+
+    await state.set_state(UserPaymentCheck.waiting_for_img)
+    await state.update_data(redis_key=redis_key)
