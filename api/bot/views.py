@@ -76,10 +76,10 @@ async def create_script_view(request):
         await bot.send_message(
             chat_id=tg_user_id,
             text=(
-                f"✅ <b>Сценарий почти активировано</b>\n\n"
-                f"🔑 <b>Ключ:</b> {script.get('key', '-')}\n"
-                f"⏱ <b>Начало:</b> {iso_start_at}\n"
-                f"⏳ <b>Окончание:</b> {iso_stop_at}\n"
+                "📦 <b>Заказ почти готов к выдаче</b>\n\n"
+                f"🆔 <b>ID скрипта:</b> {script.get('id', '-')}\n"
+                f"📅 <b>Доступ:</b> {iso_start_at} — {iso_stop_at}\n\n"
+                "💳 <b>Оплатите, и скрипт активируется автоматически</b>"
             ),
             parse_mode="HTML",
             reply_markup=inline.change_buy(redist_key)

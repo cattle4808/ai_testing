@@ -16,8 +16,12 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
     raw_data = json.loads(await redis.get(f"buy_script:{redis_key}"))
 
     key = raw_data.get("key")
-
     change_script = await sync_to_async(operations.change_script_status)(key, True)
+
+    referrals_bonus_count = raw_data.get("referrals_count")
+
+    if referrals_bonus_count:
+        await sync_to_async(operations.change_status_referrals)(raw_data.get("user_id"), True)
 
     user_message_text = (
         f"✅ Оплата подтверждена\n\n"

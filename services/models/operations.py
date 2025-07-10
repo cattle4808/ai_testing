@@ -25,9 +25,6 @@ def get_or_create_tg_user(user_id: int, ref_by: int = None) -> dict:
     return user_dict
 
 
-
-
-
 @catch_error("ERR_CREATE_SCRIPT")
 def create_script(user_id: int, start_at: datetime, stop_at: datetime = None) -> dict:
     if stop_at is None:
@@ -94,19 +91,28 @@ def get_my_scripts(user_id: int) -> list:
 def get_referrals_counts(user_id: int) -> dict:
     referrals = models.Referral.objects.filter(inviter__user=user_id)
     all_referrals = [
-        model_to_dict(ref, fields=['id', 'used', 'created_at']) for ref in referrals
+        model_to_dict(ref, fields=['inviter', 'invited', 'used', 'created_at']) for ref in referrals
     ]
     used_referrals = [
-        model_to_dict(ref, fields=['id', 'used', 'created_at']) for ref in referrals if ref.used
+        model_to_dict(ref, fields=['inviter', 'invited', 'used', 'created_at']) for ref in referrals if ref.used
     ]
     unused_referrals = [
-        model_to_dict(ref, fields=['id', 'used', 'created_at']) for ref in referrals if not ref.used
+        model_to_dict(ref, fields=['inviter', 'invited', 'used', 'created_at']) for ref in referrals if not ref.used
     ]
     return {
         "all": all_referrals,
         "used": used_referrals,
         "unused": unused_referrals,
     }
+
+@catch_error("ERR_CHANGE_STATUS_REFERRALS")
+def change_status_referrals(user_id: int, status: bool) -> None:
+    referrals = models.Referral.objects.filter(inviter__user=user_id)
+    for ref in referrals:
+        ref.used = status
+        ref.save()
+
+    return model_to_dict(referrals, fields=['inviter', 'invited', 'used', 'created_at'])
 
 
 @catch_error("ERR_GET_REFERRAL_INVITERS")

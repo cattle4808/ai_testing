@@ -1,8 +1,8 @@
 import json
-
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
+from django.conf import settings
 
 from .. user import user_inline, admin_inline
 from ... import redis, bot
@@ -76,30 +76,37 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
     data = json.loads(raw_data)
 
     referrals = await sync_to_async(operations.get_referrals_counts)(callback.from_user.id)
+    referrals_list = referrals.get('unused', [])[:5]
+    referrals_count = len(referrals_list)
 
-    await callback.message.answer(
-        f"Доступные реферралки: {len(referrals.get('unused'))}\n"
+    base_price = settings.SCRIPT_BASE_PRICE
+    discount = referrals_count * settings.REWERD_PER_REFFERAL
+    payment_sum = max(base_price - discount, 0)
+
+    referral_note = (
+        f"<s>{base_price} сум</s> → <b>{payment_sum} сум</b>\n"
+        if referrals_count > 0 else
+        f"<b>{payment_sum} сум</b>\n"
     )
 
     await state.set_state(UserPaymentCheck.waiting_for_img)
     await state.update_data(redis_key=redis_key)
 
-    payment_sum = 250_000
-
     msg = await callback.message.answer(
-        f"💳 <b>Оплата {payment_sum} сум</b>\n\n"
-        f"🆔:<code>{data.get('key')}</code>\n"
-        f"start_at: <code>{data.get('start_at')}</code>\n"
-        f"stop_at: <code>{data.get('stop_at')}</code>\n"
-        "💰 <b>Карта для перевода:</b>\n<code>5614 6805 1994 2698</code>\n"
-        "Владелец: <b>UMEDJANOV.A</b>\n\n"
-        "📸 После оплаты просто пришли сюда фото или скриншот чека.",
+        f"💳 К оплате: {referral_note}\n"
+        f"🆔 <code>{data.get('key')}</code>\n"
+        f"⏱ <code>{data.get('start_at')}</code>\n"
+        f"⏳ <code>{data.get('stop_at')}</code>\n\n"
+        "💰 <b>Карта для перевода:</b>\n<code>9680 3501 4146 8917</code>\n"
+        "Владелец: <b>DANIIL TERGALINSKIY</b>\n\n"
+        "<b>📸 После оплаты просто пришли сюда фото или скриншот чека.</b>",
         parse_mode="HTML",
         reply_markup=user_inline.cancel_keyboard(redis_key)
     )
 
     data["payment_msg_id"] = msg.message_id
     data["payment_sum"] = payment_sum
+    data["referrals_count"] = referrals_count
     await redis.set(f"buy_script:{redis_key}", json.dumps(data))
 
 
