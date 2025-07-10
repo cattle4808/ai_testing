@@ -6,26 +6,21 @@ from asgiref.sync import sync_to_async
 from django.conf import settings
 from aiogram.fsm.context import FSMContext
 from django.forms import model_to_dict
-from django.template.defaulttags import now
+from django.utils import timezone
 
 from ..keyboards.user import inline as user_inline, reply as user_reply
 from ..keyboards.admin import inline as admin_inline, reply as admin_reply
 from .. import CommandMap
 from ..fsm.user import UserPaymentCheck
 from api.v1 import models
-from aiogram import types, F
-from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from asgiref.sync import sync_to_async
 from datetime import datetime
-
 
 from services.models import operations
 from services.models import refferal
 
 user_history = Router()
-
 
 import logging
 import traceback
@@ -187,12 +182,103 @@ class ScriptsPagination:
         return builder.as_markup()
 
 
+# Operations functions
+@catch_error("ERR_GET_MY_SCRIPTS_WITH_PAGINATION")
+def get_my_scripts_with_pagination(user_id: int, page: int = 1, per_page: int = 5) -> dict:
+    """Получить скрипты пользователя с пагинацией"""
+    offset = (page - 1) * per_page
+    queryset = models.IdScript.objects.filter(owner__user=user_id).order_by("-created_at")
+    total = queryset.count()
+    scripts = queryset[offset:offset + per_page]
+
+    script_list = [
+        model_to_dict(script, fields=[
+            'id', 'script', 'key', 'script_type', 'fingerprint',
+            'start_at', 'stop_at', 'is_active', 'used',
+            'max_usage', 'first_activate', 'first_seen'
+        ]) for script in scripts
+    ]
+
+    return {
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "scripts": script_list
+    }
+
+@catch_error("ERR_GET_SCRIPT_BY_ID")
+def get_script_by_id(script_id: int) -> dict:
+    """Получить скрипт по ID"""
+    try:
+        script = models.IdScript.objects.get(id=script_id)
+        return model_to_dict(script, fields=[
+            'id', 'script', 'key', 'script_type', 'fingerprint',
+            'start_at', 'stop_at', 'is_active', 'used',
+            'max_usage', 'first_activate', 'first_seen'
+        ])
+    except models.IdScript.DoesNotExist:
+        return None
+
+@catch_error("ERR_ACTIVATE_SCRIPT")
+def activate_script(script_id: int, user_id: int) -> dict:
+    """Активировать скрипт"""
+    try:
+        script = models.IdScript.objects.get(id=script_id, owner__user=user_id)
+
+        # Проверяем, можно ли активировать скрипт
+        if script.is_active:
+            return {'success': False, 'error': 'Скрипт уже активен'}
+
+        # Проверяем время действия
+        current_time = timezone.now()
+        if current_time < script.start_at:
+            return {'success': False, 'error': 'Время начала действия скрипта еще не наступило'}
+
+        if current_time > script.stop_at:
+            return {'success': False, 'error': 'Время действия скрипта истекло'}
+
+        # Проверяем лимит использования
+        if script.used >= script.max_usage:
+            return {'success': False, 'error': 'Достигнут лимит использования скрипта'}
+
+        # Активируем скрипт
+        script.is_active = True
+        if not script.first_activate:
+            script.first_activate = current_time
+        script.save()
+
+        return {'success': True}
+
+    except models.IdScript.DoesNotExist:
+        return {'success': False, 'error': 'Скрипт не найден'}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+@catch_error("ERR_DEACTIVATE_SCRIPT")
+def deactivate_script(script_id: int, user_id: int) -> dict:
+    """Деактивировать скрипт"""
+    try:
+        script = models.IdScript.objects.get(id=script_id, owner__user=user_id)
+
+        if not script.is_active:
+            return {'success': False, 'error': 'Скрипт уже неактивен'}
+
+        script.is_active = False
+        script.save()
+
+        return {'success': True}
+
+    except models.IdScript.DoesNotExist:
+        return {'success': False, 'error': 'Скрипт не найден'}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+
 # Обработчик ReplyKeyboard кнопки "Мои покупки/скрипты"
 @user_history.message(F.text.in_(["📂 Мои покупки", "📂 Мои скрипты", "Мои покупки", "Мои скрипты"]))
 async def my_purchases_handler(message: types.Message, state: FSMContext):
     """Обработчик кнопки 'Мои покупки' из ReplyKeyboard"""
     await my_scripts(message, state)
-
 
 # Обработчик основной команды
 @user_history.message(F.text == CommandMap.User.MY_SCRIPTS)
@@ -210,7 +296,7 @@ async def my_scripts(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
 
     # Получаем данные с пагинацией
-    scripts_data = await sync_to_async(operations.get_my_scripts_with_pagination)(user_id, page=1, per_page=5)
+    scripts_data = await sync_to_async(get_my_scripts_with_pagination)(user_id, page=1, per_page=5)
 
     if not scripts_data['scripts']:
         await message.answer(
@@ -239,7 +325,6 @@ async def my_scripts(message: types.Message, state: FSMContext):
 
     await message.answer(scripts_text, reply_markup=keyboard)
 
-
 # Обработчик переключения страниц
 @user_history.callback_query(F.data.startswith("scripts_page_"))
 async def handle_scripts_page(callback: types.CallbackQuery, state: FSMContext):
@@ -248,7 +333,7 @@ async def handle_scripts_page(callback: types.CallbackQuery, state: FSMContext):
     user_id = callback.from_user.id
 
     # Получаем данные для нужной страницы
-    scripts_data = await sync_to_async(operations.get_my_scripts_with_pagination)(user_id, page=page, per_page=5)
+    scripts_data = await sync_to_async(get_my_scripts_with_pagination)(user_id, page=page, per_page=5)
 
     if not scripts_data['scripts']:
         await callback.answer("❌ Нет скриптов на этой странице")
@@ -274,7 +359,6 @@ async def handle_scripts_page(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.edit_text(scripts_text, reply_markup=keyboard)
     await callback.answer()
 
-
 # Обработчик детального просмотра скрипта
 @user_history.callback_query(F.data.startswith("script_detail_"))
 async def handle_script_detail(callback: types.CallbackQuery):
@@ -282,7 +366,7 @@ async def handle_script_detail(callback: types.CallbackQuery):
     script_id = int(callback.data.split("_")[-1])
 
     # Получаем детальную информацию о скрипте
-    script = await sync_to_async(operations.get_script_by_id)(script_id)
+    script = await sync_to_async(get_script_by_id)(script_id)
 
     if not script:
         await callback.answer("❌ Скрипт не найден")
@@ -315,7 +399,6 @@ async def handle_script_detail(callback: types.CallbackQuery):
     await callback.message.edit_text(detail_text, reply_markup=keyboard)
     await callback.answer()
 
-
 # Обработчик активации скрипта
 @user_history.callback_query(F.data.startswith("activate_script_"))
 async def handle_activate_script(callback: types.CallbackQuery):
@@ -324,7 +407,7 @@ async def handle_activate_script(callback: types.CallbackQuery):
     user_id = callback.from_user.id
 
     # Активируем скрипт
-    result = await sync_to_async(operations.activate_script)(script_id, user_id)
+    result = await sync_to_async(activate_script)(script_id, user_id)
 
     if result.get('success'):
         await callback.answer("✅ Скрипт успешно активирован!", show_alert=True)
@@ -334,7 +417,6 @@ async def handle_activate_script(callback: types.CallbackQuery):
         error_msg = result.get('error', 'Неизвестная ошибка')
         await callback.answer(f"❌ Ошибка активации: {error_msg}", show_alert=True)
 
-
 # Обработчик деактивации скрипта
 @user_history.callback_query(F.data.startswith("deactivate_script_"))
 async def handle_deactivate_script(callback: types.CallbackQuery):
@@ -343,7 +425,7 @@ async def handle_deactivate_script(callback: types.CallbackQuery):
     user_id = callback.from_user.id
 
     # Деактивируем скрипт
-    result = await sync_to_async(operations.deactivate_script)(script_id, user_id)
+    result = await sync_to_async(deactivate_script)(script_id, user_id)
 
     if result.get('success'):
         await callback.answer("⏸️ Скрипт деактивирован", show_alert=True)
@@ -353,14 +435,13 @@ async def handle_deactivate_script(callback: types.CallbackQuery):
         error_msg = result.get('error', 'Неизвестная ошибка')
         await callback.answer(f"❌ Ошибка деактивации: {error_msg}", show_alert=True)
 
-
 # Обработчик копирования ключа
 @user_history.callback_query(F.data.startswith("copy_key_"))
 async def handle_copy_key(callback: types.CallbackQuery):
     """Обработка копирования ключа скрипта"""
     script_id = int(callback.data.split("_")[-1])
 
-    script = await sync_to_async(operations.get_script_by_id)(script_id)
+    script = await sync_to_async(get_script_by_id)(script_id)
 
     if not script:
         await callback.answer("❌ Скрипт не найден")
@@ -372,7 +453,6 @@ async def handle_copy_key(callback: types.CallbackQuery):
     else:
         await callback.answer("❌ Ключ не найден", show_alert=True)
 
-
 # Обработчик обновления статуса скрипта
 @user_history.callback_query(F.data.startswith("refresh_script_"))
 async def handle_refresh_script(callback: types.CallbackQuery):
@@ -380,7 +460,7 @@ async def handle_refresh_script(callback: types.CallbackQuery):
     script_id = int(callback.data.split("_")[-1])
 
     # Получаем обновленную информацию
-    script = await sync_to_async(operations.get_script_by_id)(script_id)
+    script = await sync_to_async(get_script_by_id)(script_id)
 
     if not script:
         await callback.answer("❌ Скрипт не найден")
@@ -389,7 +469,6 @@ async def handle_refresh_script(callback: types.CallbackQuery):
     # Обновляем отображение
     await handle_script_detail(callback)
     await callback.answer("🔄 Статус обновлен")
-
 
 # Обработчик удаления скрипта
 @user_history.callback_query(F.data.startswith("delete_script_"))
@@ -401,81 +480,8 @@ async def handle_delete_script(callback: types.CallbackQuery):
     # Пока просто показываем предупреждение
     await callback.answer("⚠️ Функция удаления будет доступна позже", show_alert=True)
 
-
 # Обработчик игнорирования нажатий на текущую страницу
 @user_history.callback_query(F.data == "current_page")
 async def handle_current_page(callback: types.CallbackQuery):
     """Обработка нажатия на индикатор текущей страницы"""
     await callback.answer("📄 Текущая страница")
-
-
-# Добавьте в operations.py:
-@catch_error("ERR_GET_SCRIPT_BY_ID")
-def get_script_by_id(script_id: int) -> dict:
-    """Получить скрипт по ID"""
-    try:
-        script = models.IdScript.objects.get(id=script_id)
-        return model_to_dict(script, fields=[
-            'id', 'script', 'key', 'script_type', 'fingerprint',
-            'start_at', 'stop_at', 'is_active', 'used',
-            'max_usage', 'first_activate', 'first_seen'
-        ])
-    except models.IdScript.DoesNotExist:
-        return None
-
-
-@catch_error("ERR_ACTIVATE_SCRIPT")
-def activate_script(script_id: int, user_id: int) -> dict:
-    """Активировать скрипт"""
-    try:
-        script = models.IdScript.objects.get(id=script_id, owner__user=user_id)
-
-        # Проверяем, можно ли активировать скрипт
-        if script.is_active:
-            return {'success': False, 'error': 'Скрипт уже активен'}
-
-        # Проверяем время действия
-        current_time = now()
-        if current_time < script.start_at:
-            return {'success': False, 'error': 'Время начала действия скрипта еще не наступило'}
-
-        if current_time > script.stop_at:
-            return {'success': False, 'error': 'Время действия скрипта истекло'}
-
-        # Проверяем лимит использования
-        if script.used >= script.max_usage:
-            return {'success': False, 'error': 'Достигнут лимит использования скрипта'}
-
-        # Активируем скрипт
-        script.is_active = True
-        if not script.first_activate:
-            script.first_activate = current_time
-        script.save()
-
-        return {'success': True}
-
-    except models.IdScript.DoesNotExist:
-        return {'success': False, 'error': 'Скрипт не найден'}
-    except Exception as e:
-        return {'success': False, 'error': str(e)}
-
-
-@catch_error("ERR_DEACTIVATE_SCRIPT")
-def deactivate_script(script_id: int, user_id: int) -> dict:
-    """Деактивировать скрипт"""
-    try:
-        script = models.IdScript.objects.get(id=script_id, owner__user=user_id)
-
-        if not script.is_active:
-            return {'success': False, 'error': 'Скрипт уже неактивен'}
-
-        # Деактивируем скрипт
-        script.is_active = False
-        script.save()
-
-        return {'success': True}
-
-    except models.IdScript.DoesNotExist:
-        return {'success': False, 'error': 'Скрипт не найден'}
-    except Exception as e:
-        return {'success': False, 'error': str(e)}
