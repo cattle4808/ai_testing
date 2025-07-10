@@ -32,7 +32,8 @@ async def get_payment_img(message: types.Message, state: FSMContext):
     await bot.edit_message_reply_markup(
         chat_id=message.from_user.id,
         message_id=payment_msg_id,
-        reply_markup=None
+        reply_markup=None,
+        parse_mode = "HTML"
     )
 
     photo = message.photo[-1]

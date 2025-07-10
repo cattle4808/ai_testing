@@ -33,7 +33,8 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
     await bot.send_photo(
         chat_id=raw_data.get("user_id"),
         photo=raw_data.get("file_id"),
-        caption=user_message_text
+        caption=user_message_text,
+        parse_mode="HTML"
     )
 
     for admin, msg_id in raw_data.get("admins").items():
@@ -79,7 +80,12 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
         f"⏱️ С: <code>{raw_data.get('start_at')}</code>\n"
         f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
     )
-    await bot.send_message(chat_id=raw_data.get("user_id"), text=user_message_text)
+    await bot.send_photo(
+        chat_id=raw_data.get("user_id"),
+        photo=raw_data.get("file_id"),
+        caption=user_message_text,
+        parse_mode="HTML"
+    )
 
     for admin, msg_id in raw_data.get("admins").items():
         await bot.edit_message_caption(
