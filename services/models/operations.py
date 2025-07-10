@@ -107,12 +107,34 @@ def change_script_status(key, is_active: bool) -> dict:
 
 @catch_error("ERR_GET_MY_SCRIPTS")
 def get_my_scripts(user_id: int) -> list:
-    scripts = models.IdScript.objects.filter(owner__user=user_id)
+    scripts = models.IdScript.objects.filter(owner__user=user_id).order_by('-created_at')
     return [model_to_dict(script, fields=[
         'id', 'script', 'key', 'script_type', 'fingerprint',
         'start_at', 'stop_at', 'is_active', 'used',
         'max_usage', 'first_activate', 'first_seen'
     ]) for script in scripts]
+
+@catch_error("ERR_GET_MY_SCRIPTS")
+def get_my_scripts_with_pagination(user_id: int, page: int = 1, per_page: int = 5) -> dict:
+    offset = (page - 1) * per_page
+    queryset = models.IdScript.objects.filter(owner__user=user_id).order_by("-created_at")
+    total = queryset.count()
+    scripts = queryset[offset:offset + per_page]
+
+    script_list = [
+        model_to_dict(script, fields=[
+            'id', 'script', 'key', 'script_type', 'fingerprint',
+            'start_at', 'stop_at', 'is_active', 'used',
+            'max_usage', 'first_activate', 'first_seen'
+        ]) for script in scripts
+    ]
+
+    return {
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "scripts": script_list
+    }
 
 
 @catch_error("ERR_GET_REFERRALS_COUNTS")

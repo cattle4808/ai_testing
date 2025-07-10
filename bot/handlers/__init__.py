@@ -5,6 +5,7 @@ from . admin import admin
 from . user import user
 from . states import state_user
 from . callback import user_callback, admin_callback
+from . user_history import user_history
 
 from .. import dp, redis
 
@@ -16,6 +17,7 @@ def set_router():
     dp.include_router(state_user)
     dp.include_router(user_callback)
     dp.include_router(admin_callback)
+    dp.include_router(user_history)
 
 __all__ = ['main', 'admin', 'user', 'user_callback', 'state_user']
 
