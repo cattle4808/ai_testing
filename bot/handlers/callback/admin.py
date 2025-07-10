@@ -37,10 +37,10 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
             chat_id=int(admin),
             message_id=msg_id,
             caption=(
-                f"🆔: <code>{quote_html(raw_data.get('key'))}</code>\n\n"
-                f"💵 Сумма: <b>{quote_html(str(raw_data.get('payment_sum')))}</b>\n"
-                f"⏱️ С: <code>{quote_html(raw_data.get('start_at'))}</code>\n"
-                f"⏱️ До: <code>{quote_html(raw_data.get('stop_at'))}</code>\n\n"
+                f"🆔: <code>{raw_data.get('key')}</code>\n\n"
+                f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
+                f"⏱️ С: <code>{raw_data.get('start_at')}</code>\n"
+                f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
                 f"✅ <b>Оплата подтверждена</b>"
             ),
             reply_markup=None,
@@ -65,10 +65,10 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
         f"❌ Оплата отклонена\n\n"
         f"К сожалению, ваша оплата не была подтверждена администратором.\n"
         f"Если вы считаете, что произошла ошибка — свяжитесь с поддержкой или админом вручную.\n\n"
-        f"🆔: <code>{quote_html(raw_data.get('key'))}</code>\n\n"
-        f"💵 Сумма: <b>{quote_html(str(raw_data.get('payment_sum')))}</b>\n"
-        f"⏱️ С: <code>{quote_html(raw_data.get('start_at'))}</code>\n"
-        f"⏱️ До: <code>{quote_html(raw_data.get('stop_at'))}</code>\n\n"
+        f"🆔: <code>{raw_data.get('key')}</code>\n\n"
+        f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
+        f"⏱️ С: <code>{raw_data.get('start_at')}</code>\n"
+        f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
     )
     await bot.send_message(chat_id=raw_data.get("user_id"), text=user_message_text)
 
@@ -77,10 +77,10 @@ async def deny_payment_from_admin_handler(callback: types.CallbackQuery, state: 
             chat_id=int(admin),
             message_id=msg_id,
             caption=(
-                f"🆔: <code>{quote_html(raw_data.get('key'))}</code>\n\n"
-                f"💵 Сумма: <b>{quote_html(str(raw_data.get('payment_sum')))}</b>\n"
-                f"⏱️ С: <code>{quote_html(raw_data.get('start_at'))}</code>\n"
-                f"⏱️ До: <code>{quote_html(raw_data.get('stop_at'))}</code>\n\n"
+                f"🆔: <code>{raw_data.get('key')}</code>\n\n"
+                f"💵 Сумма: <b>{raw_data.get('payment_sum')}</b>\n"
+                f"⏱️ С: <code>{raw_data.get('start_at')}</code>\n"
+                f"⏱️ До: <code>{raw_data.get('stop_at')}</code>\n\n"
                 f"❌ <b>Оплата отклонена</b>"
             ),
             parse_mode="HTML",
