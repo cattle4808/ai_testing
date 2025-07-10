@@ -153,7 +153,7 @@ async def send_pay(callback: types.CallbackQuery, state: FSMContext):
         chat_id=callback.from_user.id,
         message_id=callback.message.message_id,
         reply_markup=None,
-        parse_mode="HTML"
+        # parse_mode="HTML"
     )
 
     await callback.message.answer("Проверка... Подопждите идет проверка")
