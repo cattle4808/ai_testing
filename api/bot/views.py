@@ -116,7 +116,26 @@ async def change_time(request):
         start_at = make_aware(datetime.strptime(start_str, "%d.%m.%Y %H:%M"))
         stop_at = make_aware(datetime.strptime(end_str, "%d.%m.%Y %H:%M"))
 
-        await sync_to_async(operations.update_script_time)(key, start_at, stop_at)
+        script_updated = await sync_to_async(operations.update_script_time)(key, start_at, stop_at)
+
+        if not script_updated:
+            return JsonResponse({"err": True, "msg": "Не удалось обновить время скрипта"}, status=400)
+
+        notification_text = (
+            f"✅ <b>Время успешно изменено!</b>\n\n"
+            f"🆔 <b>Ключ:</b> <code>{key}</code>\n"
+            f"🕐 <b>Новое время:</b>\n"
+            f"   📅 Начало: {script_updated.get('start_at').strftime('%d.%m.%Y %H:%M')}\n"
+            f"   📅 Конец: {script_updated.get('stop_at').strftime('%d.%m.%Y %H:%M')}\n\n"
+            f"📜 <b>Скрипт:</b> {script_updated.get('script')}\n"
+            f"💡 Изменения вступили в силу немедленно."
+        )
+
+        await bot.send_message(
+            chat_id=tg_user_id,
+            text=notification_text,
+            parse_mode="HTML"
+        )
 
         return JsonResponse({"success": True})
 
