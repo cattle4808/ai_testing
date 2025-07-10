@@ -69,3 +69,17 @@ def get_page_keyboard_sessions_history(current_page: int, total_pages: int, scri
     )
 
     return builder.as_markup()
+
+
+def get_detail_keyboard():
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🔙 Назад к списку",
+                    callback_data="back_to_scripts_list"
+                )
+            ]
+        ]
+    )
