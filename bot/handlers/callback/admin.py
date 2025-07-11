@@ -49,18 +49,26 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
     testing_script_name = f"testing_{raw_data.get('script')}"
     testing_script = await sync_to_async(operations.create_testing_script)(testing_script_name)
     testing_block = (
-        f"🧪 <b>Тестовое решение:</b>\n"
-        f"🆔: <code>{testing_script.get('key')}</code>\n"
-        f"⏱️ Срок действия: <code>{testing_script.get('start_at')}</code> — <code>{testing_script.get('stop_at')}</code>\n"
-        f"🔗 <b>Ссылка:</b> <code>javascript:import('{settings.GET_SCRIPT_JS}/{testing_script.get('script')}')</code>\n\n"
-        f"Можно использовать для предварительной проверки работы системы и интерфейса."
+        f"🧪 <b>Тестовое решение</b>\n"
+        f"🆔 <code>{testing_script.get('key')}</code>\n"
+        f"⏱️ Доступен: <code>{testing_script.get('start_at')}</code> — <code>{testing_script.get('stop_at')}</code>\n"
+        f"🔗 <b>Ссылка для вставки в браузере:</b>\n"
+        f"<code>javascript:import('{settings.GET_SCRIPT_JS}/{testing_script.get('script')}')</code>\n\n"
+        f"📌 <b>Как использовать:</b>\n"
+        f"1. Открой сайт: https://testing.aft.lol/\n"
+        f"2. Вставь эту ссылку в адресную строку браузера и нажми Enter\n"
+        f"3. Система загрузит скрипт для тестирования интерфейса\n\n"
+        f"❗ Используй только в современных браузерах (Chrome / Edge / Firefox)."
     )
-
-    await bot.send_message(
-        chat_id=raw_data.get("user_id"),
-        text=testing_block,
-        parse_mode="HTML"
-    )
+    try:
+        await bot.send_video(
+            chat_id=raw_data.get("user_id"),
+            video='BAACAgIAAxkBAAIQTWhwyLpx7y3qpdsBqbnzebkUh9TAAAIocAACCxyIS4qSBT2YMJrdNgQ',
+            caption=testing_block,
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        print(e)
 
 
     chat = await bot.get_chat(raw_data.get('user_id'))
