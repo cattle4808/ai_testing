@@ -93,7 +93,7 @@ async function send() {
   };
 
   try {
-    const res = await fetch("/api/bot/change_time_view/", {
+    const res = await fetch("/bot/change_time_view/", {
       method: "POST",
       headers: { "Content-Type":"application/json" },
       body: JSON.stringify(payload)
