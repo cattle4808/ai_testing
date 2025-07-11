@@ -105,7 +105,7 @@ async def buy(callback: types.CallbackQuery, state: FSMContext):
         f"🆔 <code>{data.get('key')}</code>\n"
         f"⏱ <code>{data.get('start_at')}</code>\n"
         f"⏳ <code>{data.get('stop_at')}</code>\n\n"
-        "💰 <b>Карта для перевода:</b>\n<code>9680 3501 4146 8917</code>\n"
+        "💰 <b>Карта для перевода:</b>\n<code>9860 3501 4146 8917</code>\n"
         "Владелец: <b>DANIIL TERGALINSKIY</b>\n\n"
         "<b>📸 После оплаты просто пришли сюда фото или скриншот чека.</b>",
         parse_mode="HTML",
