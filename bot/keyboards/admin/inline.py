@@ -10,3 +10,21 @@ def check_payment(redis_key):
             ]
         ]
     )
+
+def dev_menu():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="📥 Получить метаданные файла",
+                    callback_data="metadata_file",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="📎 Get File by ID",
+                    callback_data="get_file_by_id",
+                )
+            ]
+        ]
+    )

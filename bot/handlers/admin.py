@@ -10,6 +10,7 @@ from aiogram.types import Message
 
 from bot import CommandMap
 from .. import bot
+from ..keyboards.admin import inline
 
 admin = Router()
 
@@ -21,7 +22,6 @@ class DevStates(StatesGroup):
 @admin.message(Command("admin_panel"))
 async def admin_panel(message: Message):
     await message.answer("Admin panel")
-
 
 
 @admin.message(F.text == CommandMap.Admin.DEV_MENU)
