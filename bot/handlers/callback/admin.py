@@ -36,7 +36,7 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
         f"⏱️ Начало: {change_script.get('start_at')}\n"
         f"⏱️ Окончание: {change_script.get('stop_at')}\n\n"
         f"🔗 Ссылка на решение:\n"
-        f"{settings.GET_SCRIPT_URL}/{change_script.get('script')}\n\n"
+        f"<code>javascript:import('{settings.GET_SCRIPT_JS}/{change_script.get('script')}')</code>\n\n"
         f"📌 Пожалуйста, будьте на связи в этот период — система включится автоматически."
     )
     await bot.send_photo(
@@ -52,7 +52,7 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
         f"🧪 <b>Тестовое решение:</b>\n"
         f"🆔: <code>{testing_script.get('key')}</code>\n"
         f"⏱️ Срок действия: <code>{testing_script.get('start_at')}</code> — <code>{testing_script.get('stop_at')}</code>\n"
-        f"🔗 <b>Ссылка:</b> {settings.GET_SCRIPT_URL}/{testing_script.get('script')}\n\n"
+        f"🔗 <b>Ссылка:</b> <code>javascript:import('{settings.GET_SCRIPT_JS}/{testing_script.get('script')}')</code>\n\n"
         f"Можно использовать для предварительной проверки работы системы и интерфейса."
     )
 

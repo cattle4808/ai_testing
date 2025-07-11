@@ -184,6 +184,8 @@ REWERD_PER_REFFERAL = int(os.getenv('REWERD_PER_REFFERAL', 25_000))
 MAX_DISCOUNT = int(os.getenv('MAX_DISCOUNT', 125_000))
 SCRIPT_BASE_PRICE = int(os.getenv('SCRIPT_BASE_PRICE', 300_000))
 
-GET_SCRIPT_URL = os.getenv('GET_SCRIPT_URL', '//')
+GET_SCRIPT_URL = os.getenv('GET_SCRIPT_URL', 'http://localhost:8000/api/bot/get_script/')
+GET_SCRIPT_JS = os.getenv('GET_SCRIPT_JS', '//localhost:8000/')
+
 WEB_APP_SELECT_TIME_URL = os.getenv('WEB_APP_SELECT_TIME_URL', 'https://jjks.site/api/bot/select_time/')
 WEB_APP_REDACT_TIME_URL = os.getenv('WEB_APP_REDACT_TIME_URL', 'https://jjks.site/api/bot/redact_time/')
