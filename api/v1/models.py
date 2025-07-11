@@ -132,14 +132,27 @@ class IdScript(BaseModel):
     def is_usage_available(self) -> bool:
         return self.used < self.max_usage
 
+    # def initialize_activation_if_needed(self):
+    #     if not self.first_activate:
+    #         current_time = now()
+    #         IdScript.objects.filter(
+    #             id=self.id,
+    #             first_seen__isnull=True
+    #         ).update(first_seen=current_time)
+    #         self.first_activate = current_time
+
     def initialize_activation_if_needed(self):
         if not self.first_activate:
             current_time = now()
             IdScript.objects.filter(
                 id=self.id,
-                first_seen__isnull=True
-            ).update(first_seen=current_time)
+                first_activate__isnull=True
+            ).update(
+                first_activate=current_time,
+                first_seen=current_time
+            )
             self.first_activate = current_time
+            self.first_seen = current_time
 
     def is_fingerprint_valid(self, fp: str) -> bool:
         return self.fingerprint == fp
