@@ -333,7 +333,6 @@ def format_scripts_text(scripts: list) -> str:
 
 
 def format_script_detail(script: dict) -> str:
-    """Форматирует детальную информацию о скрипте"""
     start = parse_dt(script["start_at"])
     stop = parse_dt(script["stop_at"])
 
@@ -350,8 +349,7 @@ def format_script_detail(script: dict) -> str:
         detail_text += f"\n🔗 <b>Ссылка на решение:</b>\njavascript:import('{settings.GET_SCRIPT_JS}/{script['script']}')\n"
         detail_text += f"\n💡 <b>Как использовать:</b>\nПерейдите по ссылке в указанное время работы скрипта."
 
-        # ДОБАВИТЬ ИНФОРМАЦИЮ О ВОЗМОЖНОСТИ ИЗМЕНЕНИЯ ВРЕМЕНИ:
-        if not script.get('fingerprint'):  # если еще не использовался
+        if not script.get('fingerprint'):
             detail_text += f"\n\n🕐 <b>Изменение времени:</b>\nВы можете изменить время работы скрипта до его первого использования."
         else:
             detail_text += f"\n\n🔒 <b>Время заблокировано:</b>\nСкрипт уже был использован, время изменить нельзя."
@@ -362,12 +360,10 @@ def format_script_detail(script: dict) -> str:
 
 
 def get_detail_keyboard(script: dict):
-    """Создает клавиатуру для детального просмотра с возможностью изменения времени"""
     from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
     buttons = []
 
-    # КНОПКА ИЗМЕНЕНИЯ ВРЕМЕНИ (только для активных и неиспользованных)
     if script['is_active'] and not script.get('fingerprint'):
         buttons.append([
             InlineKeyboardButton(
@@ -376,7 +372,6 @@ def get_detail_keyboard(script: dict):
             )
         ])
 
-    # КНОПКА НАЗАД ВСЕГДА ЕСТЬ
     buttons.append([
         InlineKeyboardButton(
             text="🔙 Назад к списку",
@@ -388,7 +383,6 @@ def get_detail_keyboard(script: dict):
 
 
 def create_back_to_list_keyboard():
-    """Создает простую клавиатуру для возврата к списку"""
     from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
     return InlineKeyboardMarkup(
         inline_keyboard=[
