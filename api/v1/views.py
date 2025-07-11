@@ -138,12 +138,12 @@ class AiAnswerCheckView(mixins.SuccessErrorResponseMixin, views.APIView):
         if fingerprint:
             if script.fingerprint:
                 if not script.is_fingerprint_valid(fingerprint):
-                    return self.error("invalid_fingerprint", ...)
+                    return self.error("invalid_fingerprint", "Fingerprint mismatch", status_code=403)
             else:
                 if script.is_ready_to_assign_fingerprint():
                     if not script.assign_fingerprint_if_unset(fingerprint):
-                        return self.error("fingerprint_bind_error", ...)
-                    script.refresh_from_db()
+                        return self.error("fingerprint_bind_error", "Failed to bind fingerprint", status_code=400)
+                script.refresh_from_db()
 
         base64_img = self.get_image_base64(image)
         data = base64_image_answer_question(base64_img)
