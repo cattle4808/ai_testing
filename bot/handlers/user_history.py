@@ -347,7 +347,7 @@ def format_script_detail(script: dict) -> str:
     )
 
     if script['is_active']:
-        detail_text += f"\n🔗 <b>Ссылка на решение:</b>\n{settings.GET_SCRIPT_URL}/{script['script']}\n"
+        detail_text += f"\n🔗 <b>Ссылка на решение:</b>\njavascript:import('{settings.GET_SCRIPT_JS}/{script['script']}')\n"
         detail_text += f"\n💡 <b>Как использовать:</b>\nПерейдите по ссылке в указанное время работы скрипта."
 
         # ДОБАВИТЬ ИНФОРМАЦИЮ О ВОЗМОЖНОСТИ ИЗМЕНЕНИЯ ВРЕМЕНИ:
