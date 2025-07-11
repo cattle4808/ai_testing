@@ -22,13 +22,9 @@ class DevStates(StatesGroup):
 async def admin_panel(message: Message):
     await message.answer("Admin panel")
 
+
+
 @admin.message(F.text == CommandMap.Admin.DEV_MENU)
-async def dev_panel(message: Message):
-    await message.answer("Dev panel")
-
-
-
-@admin.message(F.text == "dev_menu")
 async def dev_menu(message: types.Message, state: FSMContext):
     await message.answer("🛠 <b>Developer Menu</b>", reply_markup=inline.dev_menu(), parse_mode="HTML")
 
