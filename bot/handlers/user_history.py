@@ -31,7 +31,7 @@
 #
 #
 # def format_scripts_text(scripts: list) -> str:
-#     text = "<b>Ваши сессии:</b>\n\n"
+#     text = "<b>Ваши покупки:</b>\n\n"
 #     for s in scripts:
 #         start = parse_dt(s["start_at"])
 #         stop = parse_dt(s["stop_at"])
@@ -318,7 +318,7 @@ class HistoreState(StatesGroup):
 
 def format_scripts_text(scripts: list) -> str:
     """Форматирует список скриптов в текст"""
-    text = "<b>Ваши сессии:</b>\n\n"
+    text = "<b>Ваши покупки:</b>\n\n"
     for s in scripts:
         start = parse_dt(s["start_at"])
         stop = parse_dt(s["stop_at"])
