@@ -13,10 +13,13 @@ from django.conf import settings
 from services.image2answer.model1_openai import base64_image_answer_question
 from . import models, serializers, mixins
 from . scripts import BASE_SCRIPT_PROD_UUID, BASE_SCRIPT
+from . import permissions
 
 class CreateIdScriptApiView(mixins.SuccessErrorResponseMixin, generics.ListCreateAPIView):
     queryset = models.IdScript.objects.all()
     serializer_class = serializers.CreateScriptSerializer
+
+    permission_classes = [permissions.TokenPermission]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -24,6 +27,8 @@ class CreateIdScriptApiView(mixins.SuccessErrorResponseMixin, generics.ListCreat
         return self.success(serializer.data)
 
 class GetOrCreateTgUserView(mixins.SuccessErrorResponseMixin, views.APIView):
+    permission_classes = [permissions.TokenPermission]
+
     def post(self, request, *args, **kwargs):
         instance, created = models.TgUsers.objects.get_or_create(defaults=request.data)
         serializer = serializers.TgUserSerializer(instance)
@@ -37,6 +42,7 @@ class GetOrCreateTgUserView(mixins.SuccessErrorResponseMixin, views.APIView):
 
 class GetMyScriptsView(mixins.SuccessErrorResponseMixin, generics.ListAPIView):
     serializer_class = serializers.GetMyScriptsSerializer
+    permission_classes = [permissions.TokenPermission]
 
     def get_queryset(self):
         return models.IdScript.objects.filter(owner__user=self.request.query_params.get('user'))
@@ -52,12 +58,16 @@ class ChangeIsActivateView(mixins.SuccessErrorResponseMixin, generics.UpdateAPIV
     serializer_class = serializers.ChangeScriptISActiveSerializer
     lookup_field = 'key'
 
+    permission_classes = [permissions.TokenPermission]
+
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
         return self.success(response.data)
 
 
 class ChangeScriptTimeView(mixins.SuccessErrorResponseMixin, views.APIView):
+    permission_classes = [permissions.TokenPermission]
+
     def put(self, request, *args, **kwargs):
         key = request.data.get("key")
         start_at_str = request.data.get("start_at")
