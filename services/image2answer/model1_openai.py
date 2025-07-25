@@ -11,6 +11,17 @@ def solve_image(image_base64: str) -> dict:
             model="gpt-4o",
             temperature=0.9,
             max_tokens=1500,
+            tools=[
+                {
+                    "type": "code_interpreter",
+                    "container": {"type": "auto"}
+                },
+                {
+                    "type": "web_search_preview"
+                },
+
+            ],
+
             messages=[
                 {
                     "role": "system",
