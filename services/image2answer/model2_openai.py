@@ -42,8 +42,11 @@ def get_or_create_assistant() -> str:
         name=ASSISTANT_NAME,
         instructions=INSTRUCTIONS,
         tools=[
-            {"type": "code_interpreter"},
-            {"type": "web_search"}
+            {
+                "type": "code_interpreter",
+                "container": {"type": "auto"}
+            },
+            {"type": "web_search_preview"}
         ],
         model=MODEL
     )
