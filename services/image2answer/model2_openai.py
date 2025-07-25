@@ -45,7 +45,7 @@ def get_or_create_assistant() -> str:
             {
                 "type": "code_interpreter",
             },
-            {"type": "web_search_preview"}
+            # {"type": "web_search_preview"}
         ],
         model=MODEL
     )
