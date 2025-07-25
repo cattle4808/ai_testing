@@ -12,7 +12,10 @@ class HasAcceptedPolicy(BaseFilter):
         user = await sync_to_async(operations.get_or_create_tg_user)(user_id=message.from_user.id)
 
         if not user.get("police", False):
-            await message.answer(reply_markup=None)
+            try:
+                await message.delete()
+            except Exception:
+                pass
 
             await bot.send_document(
                 chat_id=message.from_user.id,
