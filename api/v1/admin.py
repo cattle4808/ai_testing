@@ -114,7 +114,7 @@ class TgUsersAdmin(admin.ModelAdmin):
     list_display = [
         'user_display', 'username', 'is_admin', 'referral_count_display',
         'scripts_count_display', 'total_usage_display', 'registration_date',
-        'last_activity', 'referrer_display', 'admin_actions'
+        'last_activity', 'referrer_display', 'admin_actions', 'police'
     ]
     list_filter = [
         'is_admin', 'created_at', ReferralCountFilter,
