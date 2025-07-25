@@ -11,12 +11,15 @@ from ..keyboards.user import inline as user_inline, reply as user_reply
 from ..keyboards.admin import inline as admin_inline, reply as admin_reply
 from .. import CommandMap
 from ..fsm.user import UserPaymentCheck
+from ..filters import police
 
 from services.models import operations
 from services.models import refferal
 
+
 user = Router()
-@user.message(F.text == CommandMap.User.BUY_SCRIPT)
+
+@user.message(F.text == CommandMap.User.BUY_SCRIPT, police.HasAcceptedPolicy())
 async def buy_script(message: types.Message, state: FSMContext):
     state_name = await state.get_state()
     if state_name == UserPaymentCheck.waiting_for_img:
@@ -100,7 +103,7 @@ async def my_referrals(message: types.Message, state: FSMContext):
 
 
 
-@user.message(F.text == CommandMap.User.INSTRUCTION)
+@user.message(F.text == CommandMap.User.INSTRUCTION, police.HasAcceptedPolicy())
 async def instruction(message: types.Message, state: FSMContext):
     state_name = await state.get_state()
     if state_name == UserPaymentCheck.waiting_for_img:
@@ -123,7 +126,7 @@ async def instruction(message: types.Message, state: FSMContext):
     await message.answer("В разработке ...")
 
 
-@user.message(F.text == CommandMap.User.SUPPORT)
+@user.message(F.text == CommandMap.User.SUPPORT, police.HasAcceptedPolicy())
 async def support(message: types.Message, state: FSMContext):
     state_name = await state.get_state()
     if state_name == UserPaymentCheck.waiting_for_img:

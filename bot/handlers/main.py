@@ -1,11 +1,14 @@
-from aiogram import Router, types
+from aiogram import Router, types, F
 from aiogram.filters import CommandStart
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from asgiref.sync import sync_to_async
 
 from services.crypto import CompactReferralCipher
 from services.models import operations
 from ..keyboards.user import reply as user_reply, inline as user_inline
 from ..keyboards.admin import reply as admin_reply, inline as admin_inline
+from .. import bot
+from ..filters import police
 
 
 main = Router()
@@ -32,19 +35,32 @@ async def start_handler(message: types.Message, command: CommandStart):
     if referral_code:
         try:
             ref_by = CompactReferralCipher().decrypt_id(referral_code)
-            if ref_by == user_id:
-                ref_by = None
-            elif ref_by is None:
+            if ref_by == user_id or ref_by is None:
                 ref_by = None
             else:
-                await message.answer("👥 Привет! Вы пришли по приглашению.")
+                await message.answer("👥 Вы пришли по приглашению.")
         except Exception as e:
             ref_by = None
             print(f"[REFERRAL ERROR] '{referral_code}': {e}")
     else:
-        await message.answer("👋 Привет! Добро пожаловать!")
+        await message.answer("👋 Добро пожаловать!")
 
     user = await sync_to_async(operations.get_or_create_tg_user)(user_id, ref_by)
+
+    if not user.get("police", False):
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="✅ Принять политику", callback_data="accept_policy")]
+        ])
+
+        await bot.send_document(
+            chat_id=user_id,
+            document="BQACAgIAAxkBAAIW_2iDiRrkxq2C4XoGwk2tHwZecaoQAAJndwACx90YSJrHnFqsl8QMNgQ",
+            caption="<b>🛡️ Прежде чем начать, пожалуйста, ознакомьтесь и примите политику использования.</b>\n\n"
+                    "Нажмите кнопку ниже, чтобы подтвердить согласие.",
+            parse_mode="HTML",
+            reply_markup=kb
+        )
+        return
 
     if await sync_to_async(operations.is_admin)(user_id):
         await message.answer("✅ Вы вошли как администратор", reply_markup=admin_reply.main_menu())
@@ -52,4 +68,17 @@ async def start_handler(message: types.Message, command: CommandStart):
         await message.answer(f"Привет, {username}!", reply_markup=user_reply.main_menu())
 
 
+@main.callback_query(F.data == "accept_policy")
+async def accept_policy_handler(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    username = callback.from_user.username or "Гость"
 
+    await sync_to_async(operations.set_police)(user_id, True)
+
+    await callback.message.delete()
+    await callback.answer("✅ Политика принята")
+
+    if await sync_to_async(operations.is_admin)(user_id):
+        await callback.message.answer("✅ Вы вошли как администратор", reply_markup=admin_reply.main_menu())
+    else:
+        await callback.message.answer(f"Привет, {username}!", reply_markup=user_reply.main_menu())

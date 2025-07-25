@@ -270,3 +270,12 @@ def get_admins() -> list[dict]:
         for admin in models.TgUsers.objects.filter(is_admin=True)
     ]
 
+
+@catch_error("ERR_POLICE_UPDATE")
+def set_police(user_id, police: bool) -> dict:
+    user = models.TgUsers.objects.get(user=user_id)
+
+    user.police = police
+    user.save()
+
+    return model_to_dict(user)

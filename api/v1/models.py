@@ -43,8 +43,15 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+class TgUserPolice(models.Model):
+    police = models.BooleanField(default=False)
 
-class TgUsers(BaseModel):
+    class Meta:
+        abstract = True
+
+
+
+class TgUsers(BaseModel, TgUserPolice):
     user = models.BigIntegerField(unique=True)
     is_admin = models.BooleanField(default=False)
     username = models.CharField(max_length=255, null=True, blank=True)
@@ -221,3 +228,6 @@ class Referral(models.Model):
 
     def __str__(self):
         return f"{self.inviter} → {self.invited} | Used: {self.used}"
+
+
+
