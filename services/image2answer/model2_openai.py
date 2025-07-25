@@ -44,7 +44,6 @@ def get_or_create_assistant() -> str:
         tools=[
             {
                 "type": "code_interpreter",
-                "container": {"type": "auto"}
             },
             {"type": "web_search_preview"}
         ],
