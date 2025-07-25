@@ -124,7 +124,7 @@ class TgUsersAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'updated_at', 'referral_stats', 'user_activity_chart']
     fieldsets = (
         ('Основная информация', {
-            'fields': ('user', 'username', 'is_admin')
+            'fields': ('user', 'username', 'is_admin', 'police')
         }),
         ('Реферальная система', {
             'fields': ('referred_by', 'referral_stats'),
