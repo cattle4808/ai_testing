@@ -257,4 +257,5 @@ async def accept_policy_handler(callback: types.CallbackQuery):
     await sync_to_async(operations.set_police)(user_id, True)
 
     await callback.message.delete()
+    await callback.answer()
     await callback.answer("✅ Политика принята")
