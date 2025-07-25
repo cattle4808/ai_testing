@@ -247,3 +247,14 @@ async def recheck_pay(callback: types.CallbackQuery, state: FSMContext):
 
     await state.set_state(UserPaymentCheck.waiting_for_img)
     await state.update_data(redis_key=redis_key)
+
+
+@user_callback.callback_query(F.data == "accept_policy_main")
+async def accept_policy_handler(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    username = callback.from_user.username or "Гость"
+
+    await sync_to_async(operations.set_police)(user_id, True)
+
+    await callback.message.delete()
+    await callback.answer("✅ Политика принята")

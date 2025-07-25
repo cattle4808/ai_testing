@@ -72,3 +72,15 @@ def change_buy(redis_key):
             ]
         ]
     )
+
+def police_kb():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✅ Принять политику",
+                    callback_data="accept_policy"
+                )
+            ]
+        ]
+    )

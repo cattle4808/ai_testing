@@ -42,14 +42,14 @@ async def start_handler(message: types.Message, command: CommandStart):
         except Exception as e:
             ref_by = None
             print(f"[REFERRAL ERROR] '{referral_code}': {e}")
-    else:
-        await message.answer("👋 Добро пожаловать!")
+    # else:
+    #     await message.answer()
 
     user = await sync_to_async(operations.get_or_create_tg_user)(user_id, ref_by)
 
     if not user.get("police", False):
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Принять политику", callback_data="accept_policy")]
+            [InlineKeyboardButton(text="✅ Принять политику", callback_data="accept_policy_main")]
         ])
 
         await bot.send_document(
@@ -68,7 +68,7 @@ async def start_handler(message: types.Message, command: CommandStart):
         await message.answer(f"Привет, {username}!", reply_markup=user_reply.main_menu())
 
 
-@main.callback_query(F.data == "accept_policy")
+@main.callback_query(F.data == "accept_policy_main")
 async def accept_policy_handler(callback: types.CallbackQuery):
     user_id = callback.from_user.id
     username = callback.from_user.username or "Гость"
