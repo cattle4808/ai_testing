@@ -11,6 +11,7 @@ from datetime import timedelta
 from django.conf import settings
 
 from services.image2answer.model1_openai import base64_image_answer_question
+from services.image2answer.model2_openai import solve_image_with_assistant
 from . import models, serializers, mixins
 from . scripts import BASE_SCRIPT_PROD_UUID, BASE_SCRIPT
 from . import permissions
@@ -156,8 +157,8 @@ class AiAnswerCheckView(mixins.SuccessErrorResponseMixin, views.APIView):
                 script.refresh_from_db()
 
         base64_img = self.get_image_base64(image)
-        data = base64_image_answer_question(base64_img)
-
+        # data = base64_image_answer_question(base64_img)
+        data = solve_image_with_assistant(base64_img)
         if not data or not data.get("answer"):
             return self.error("ai_parse_error", "Answer not found", status_code=500)
 
