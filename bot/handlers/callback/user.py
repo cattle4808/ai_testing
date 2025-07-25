@@ -249,7 +249,7 @@ async def recheck_pay(callback: types.CallbackQuery, state: FSMContext):
     await state.update_data(redis_key=redis_key)
 
 
-@user_callback.callback_query(F.data == "accept_policy_main")
+@user_callback.callback_query(F.data == "accept_policy")
 async def accept_policy_handler(callback: types.CallbackQuery):
     user_id = callback.from_user.id
     username = callback.from_user.username or "Гость"
