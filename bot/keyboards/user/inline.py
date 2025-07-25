@@ -27,6 +27,9 @@ def support():
             ],
             [
                 InlineKeyboardButton(text="📩 Написать администратору", url="https://t.me/AFT_Admin1")
+            ],
+            [
+                InlineKeyboardButton(text="📘 Читать политику", callback_data="read_policy")
             ]
         ]
     )

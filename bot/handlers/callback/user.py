@@ -259,3 +259,16 @@ async def accept_policy_handler(callback: types.CallbackQuery):
     await callback.message.delete()
     await callback.answer("✅ Политика принята", show_alert=True)
 
+
+@user_callback.callback_query(F.data == "read_policy")
+async def read_policy_handler(callback: types.CallbackQuery):
+    await callback.answer()
+
+    await bot.send_document(
+        chat_id=callback.from_user.id,
+        document="BQACAgIAAxkBAAIW_2iDiRrkxq2C4XoGwk2tHwZecaoQAAJndwACx90YSJrHnFqsl8QMNgQ",
+        caption="<b>📖 Политика использования</b>",
+        parse_mode="HTML"
+    )
+
+
