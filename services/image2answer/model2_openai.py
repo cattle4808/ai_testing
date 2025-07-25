@@ -3,6 +3,7 @@ import base64
 import openai
 import re
 import json
+import logging
 
 from core.settings import OPENAI_API_KEY
 
@@ -28,6 +29,8 @@ INSTRUCTIONS = """
 }
 """
 
+logging.basicConfig(level=logging.INFO)  # или DEBUG
+
 
 def get_or_create_assistant() -> str:
     assistants = openai_client.beta.assistants.list().data
@@ -50,42 +53,56 @@ def get_or_create_assistant() -> str:
 def solve_image_with_assistant(image_base64: str) -> dict:
     assistant_id = get_or_create_assistant()
 
-    image_bytes = base64.b64decode(image_base64)
-    file = openai_client.files.create(file=image_bytes, purpose="assistants")
+    try:
+        image_bytes = base64.b64decode(image_base64)
+        file = openai_client.files.create(file=image_bytes, purpose="assistants")
 
-    thread = openai_client.beta.threads.create()
+        thread = openai_client.beta.threads.create()
 
-    openai_client.beta.threads.messages.create(
-        thread_id=thread.id,
-        role="user",
-        content="Реши задачу по картинке. Используй код, поиск, логику. В конце дай JSON.",
-        file_ids=[file.id]
-    )
+        openai_client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content="Реши задачу по картинке. Используй код, поиск, логику. В конце дай JSON.",
+            file_ids=[file.id]
+        )
 
-    run = openai_client.beta.threads.runs.create(
-        thread_id=thread.id,
-        assistant_id=assistant_id
-    )
+        run = openai_client.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=assistant_id
+        )
 
-    while True:
-        run = openai_client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
-        if run.status in ["completed", "failed", "cancelled"]:
-            break
-        time.sleep(1)
+        while True:
+            run = openai_client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
+            if run.status in ["completed", "failed", "cancelled"]:
+                break
+            time.sleep(1)
 
-    messages = openai_client.beta.threads.messages.list(thread_id=thread.id)
-    content = messages.data[0].content[0].text.value
+        messages = openai_client.beta.threads.messages.list(thread_id=thread.id)
+        content = messages.data[0].content[0].text.value.strip()
 
-    json_match = re.search(r"\{[\s\S]*?\"question\"[\s\S]*?\}", content)
-    if json_match:
-        try:
-            return json.loads(json_match.group())
-        except json.JSONDecodeError:
-            pass
+        logging.info("\n======= Ответ ассистента =======\n%s\n===============================\n", content)
 
-    return {
-        "question": "Не найден JSON",
-        "options": "N/A",
-        "answer": "N/A",
-        "message": content[:700]
-    }
+        json_match = re.search(r"\{[\s\S]*?\"question\"[\s\S]*?\}", content)
+        if json_match:
+            try:
+                parsed_json = json.loads(json_match.group())
+                logging.info("✅ Распознанный JSON: %s", parsed_json)
+                return parsed_json
+            except json.JSONDecodeError as e:
+                logging.error("❌ Ошибка парсинга JSON: %s", e)
+
+        return {
+            "question": "Не найден JSON",
+            "options": "N/A",
+            "answer": "N/A",
+            "message": content[:700]
+        }
+
+    except Exception as e:
+        logging.exception("🚨 Общая ошибка при решении изображения")
+        return {
+            "question": "Ошибка",
+            "options": "N/A",
+            "answer": "Ошибка",
+            "message": f"Ошибка: {str(e)}"
+        }
