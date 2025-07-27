@@ -152,8 +152,7 @@ async def instruction(message: types.Message, state: FSMContext):
             chat_id=message.from_user.id,
             video='BAACAgIAAxkBAAIYMmiFwK52pClYD7QkOjurR1mf6bz4AAIzcAACQmcxSFDvFQgTHYzFNgQ',
             caption=common_instruction,
-            parse_mode="HTML",
-            disable_web_page_preview=True
+            parse_mode="HTML"
         )
     except Exception as e:
         print(e)
