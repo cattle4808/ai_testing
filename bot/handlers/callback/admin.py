@@ -63,7 +63,7 @@ async def allow_payment_from_admin_handler(callback: types.CallbackQuery, state:
     try:
         await bot.send_video(
             chat_id=raw_data.get("user_id"),
-            video='BAACAgIAAxkBAAIQTWhwyLpx7y3qpdsBqbnzebkUh9TAAAIocAACCxyIS4qSBT2YMJrdNgQ',
+            video='BAACAgIAAxkBAAIYMmiFwK52pClYD7QkOjurR1mf6bz4AAIzcAACQmcxSFDvFQgTHYzFNgQ',
             caption=testing_block,
             parse_mode="HTML"
         )
