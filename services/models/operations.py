@@ -64,7 +64,8 @@ def create_testing_script(script_name: str) -> dict:
         script=script_name,
         start_at=start_at,
         stop_at=stop_at,
-        is_active=True
+        is_active=True,
+        max_usage=5
     )
 
     data = model_to_dict(script, fields=[
