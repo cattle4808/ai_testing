@@ -280,3 +280,4 @@ def set_police(user_id, police: bool) -> dict:
     user.save()
 
     return model_to_dict(user)
+
